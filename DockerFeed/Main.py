@@ -58,10 +58,12 @@ def Main(args = None, stackHandler: StackHandler = None):
     if os.path.isfile('.env'):
         load_dotenv('.env')
 
-    changeWorkingDirectory = False
+    moduleDir = os.path.dirname(os.path.realpath(__file__))
+    load_dotenv(os.path.join(moduleDir, 'default.env'))
     if storage is None:
-        changeWorkingDirectory = True
-        storage = 'stacks'
+        stacksFolder = os.path.join(moduleDir, 'stacks')
+    else:
+        stacksFolder = os.path.join(os.getcwd(), storage)
 
     if stackHandler is None:
         artifactStore = ArtifactStore(
@@ -73,26 +75,16 @@ def Main(args = None, stackHandler: StackHandler = None):
             verifyCertificate=verifyUri)
 
         stackHandler = StackHandler(artifactStore,
-                                    stacksFolder=storage,
+                                    stacksFolder=stacksFolder,
                                     infrastructureStacks=infrastructureStacks,
                                     offline=offline,
                                     removeFiles=removeFiles)
 
-    cwd = os.getcwd()
-    moduleDir = os.path.dirname(os.path.realpath(__file__))
-    load_dotenv(os.path.join(moduleDir, 'default.env'))
-    if changeWorkingDirectory and not(action == 'push'):
-        os.chdir(moduleDir)
-
     feedUri = artifactStore.GetFeedUri()
-    storageFolder = os.path.join(os.getcwd(), storage)
-    try:
-        HandleAction(action, stacks, feedUri, offline, storageFolder, stackHandler)
-    finally:
-        os.chdir(cwd)
+    HandleAction(action, stacks, feedUri, offline, stacksFolder, stackHandler)
 
 
-def HandleAction(action, stacks, feedUri, offline, storageFolder, stackHandler: StackHandler):
+def HandleAction(action, stacks, feedUri, offline, stacksFolder, stackHandler: StackHandler):
     if action == 'init':
         stackHandler.Init()
     elif action == 'deploy':
@@ -100,7 +92,7 @@ def HandleAction(action, stacks, feedUri, offline, storageFolder, stackHandler: 
     elif action == 'rm' or action == 'remove':
         stackHandler.Remove(stacks)
     elif action == 'ls' or action == 'list':
-        PrettyPrintStacks(stackHandler.List(stacks), feedUri, offline, storageFolder)
+        PrettyPrintStacks(stackHandler.List(stacks), feedUri, offline, stacksFolder)
     elif action == 'prune':
         stackHandler.Prune()
     elif action == 'pull':
@@ -133,9 +125,9 @@ def ExposeEnvironmentVariables(envVariables):
             os.environ[key] = value
 
 
-def PrettyPrintStacks(stacks, feedUrl, offline, storageFolder):
+def PrettyPrintStacks(stacks, feedUrl, offline, stacksFolder):
     if offline:
-        info = "<--- Stacks in local folder {0} --->\r\n".format(storageFolder)
+        info = "<--- Stacks in local folder {0} --->\r\n".format(stacksFolder)
     else:
         info = "<--- Stacks on feed {0} --->\r\n".format(feedUrl)
     for stack in stacks:
