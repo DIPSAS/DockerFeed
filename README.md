@@ -28,19 +28,22 @@ networks:
   - https://www.docker.com/get-docker
 
 ## Usage
-The Docker Feed tool is available as a command line tool `dockerf`.
-- Initialize swarm with `init`:
-  - `dockerf init`
-- Deploy stacks with `deploy`:
-  - `dockerf deploy`
-- Remove stacks with `rm`/`remove`:
-  - `dockerf rm`
-- List stacks with `ls`:
-  - `dockerf ls`
+The Docker Feed tool is available as the command line tool `dockerf`.
+Handle the docker feed by adding any of the following commands with zero or more stacks to handle.
+- `init` - Initialize swarm
+- `deploy` - Deploy stacks
+  - Adding no specific stacks to deploy will result in deploying all stacks.
+  - Example: `dockerf deploy first-stack second-stack`
+- `rm`/`remove` - Remove stacks
+  - Adding no specific stacks to deploy will result in removing all stacks.
+  - Example: `dockerf remove first-stack second-stack`
+- `ls/list` - List stacks
     - Hint, add search criterias following `ls`, such as:
     - `dockerf ls first-stack second-stack`
-- Add specific stacks to deploy/remove:
-  - `dockerf deploy first-stack second-stack`
+- `prune` - Remove all stacks
+- `pull` - Pull stacks
+- `push` - Push docker-compose files to feed.
+  - Example: `dockerf push docker-compose.first-stack.yml docker-compose.second-stack.yml`
 - Optional arguments:
   - `-u/--user` to specify user credentials for jfrog as `user:password`.
   - `-t/--token` to specify a token for jfrog.
