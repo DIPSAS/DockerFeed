@@ -35,7 +35,7 @@ Handle the docker feed by adding any of the following commands with zero or more
   - Adding no specific stacks to deploy will result in deploying all stacks.
   - Example: `dockerf deploy first-stack second-stack`
 - `rm`/`remove` - Remove stacks from Swarm.
-  - Adding no specific stacks to deploy will result in removing all stacks.
+  - Adding no specific stacks to remove will result in removing all stacks.
   - Example: `dockerf remove first-stack second-stack`
 - `ls/list` - List stacks on feed.
     - Hint, add search criterias following `ls`, such as:
