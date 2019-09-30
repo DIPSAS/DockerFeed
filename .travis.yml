@@ -1,0 +1,13 @@
+language: python
+
+services:
+  - docker
+
+python:
+  - "3.4"
+  - "3.5"
+  - "3.6"
+
+install: pip install -r requirements.txt
+
+script: python -m unittest discover -p *Test*.py
