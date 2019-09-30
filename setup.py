@@ -21,7 +21,7 @@ setup(
     description='Docker Feed tool',  # Required
     long_description=long_description,  # Optional
     long_description_content_type='text/markdown',  # Optional
-    url='http://vd-tfs03:8080/tfs/DefaultCollection/DIPS/_git/DockerFeed',  # Optional
+    url='https://github.com/DIPSAS/DockerFeed',  # Optional
     author='DIPS AS',  # Optional
     author_email='hha@dips.no,heh@dips.no',  # Optional
     include_package_data=True,
