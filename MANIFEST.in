@@ -1,0 +1,9 @@
+# Include the README
+include *.md
+
+# Include the license file
+include LICENSE
+
+# Include deployment files
+# Just include all possible folders
+include DockerFeed/*.env
