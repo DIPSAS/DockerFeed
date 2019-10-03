@@ -1,5 +1,6 @@
 from DockerFeed.ArtifactStore import ArtifactStore
 from DockerFeed import InfrastructureHandler
+from DockerFeed import VerificationHandler
 from DockerBuildSystem import DockerSwarmTools
 import os
 import glob
@@ -12,7 +13,10 @@ class StackHandler:
                  infrastructureStacks = ['infrastructure'],
                  offline = False,
                  removeFiles = False,
-                 environmentFiles = []):
+                 environmentFiles = [],
+                 verifyImageDigest=True, \
+                 verifyImages=True, \
+                 requiredImageLabels=VerificationHandler.DEFAULT_REQUIRED_IMAGE_LABELS):
 
         self.__artifactStore = artifactStore
         self.__stacksFolder = stacksFolder
@@ -20,6 +24,9 @@ class StackHandler:
         self.__offline = offline
         self.__removeFiles = removeFiles
         self.__environmentFiles = environmentFiles
+        self.__verifyImageDigest = verifyImageDigest
+        self.__verifyImages = verifyImages
+        self.__requiredImageLabels = requiredImageLabels
         os.makedirs(self.__stacksFolder, exist_ok=True)
 
         if not(self.__offline):
@@ -90,6 +97,50 @@ class StackHandler:
         return stacks
 
 
+    def Verify(self, stacks = None):
+        if stacks is None:
+            stackFileMatches = self.__GetStackFileMatches()
+        else:
+            stackFileMatches = []
+            for stack in stacks:
+                stackFileMatches += self.__GetStackFileMatches(stack)
+
+        valid = True
+        for stackFile in stackFileMatches:
+            stackName = self.__ParseStackNameFromComposeFilename(stackFile)
+            if stackName in self.__infrastructureStacks:
+                continue
+
+            valid &= VerificationHandler.VerifyComposeFile(stackFile, \
+                                                           self.__verifyImageDigest, \
+                                                           self.__verifyImages, \
+                                                           self.__requiredImageLabels)
+        if valid:
+            print("Successfully validated stacks!")
+        else:
+            warnings.warn("Stacks failed verification! See warnings in log.")
+
+        return valid
+
+
+    def __GetStackFileMatches(self, stack = None):
+        if not(self.__offline):
+            self.__PullStacks(stack)
+
+        if stack is None:
+            stackFileMatches = glob.glob(os.path.join(self.__stacksFolder, 'docker-compose.*.y*ml'))
+        else:
+            stackFileMatches = glob.glob(os.path.join(self.__stacksFolder, 'docker-compose.{0}.y*ml'.format(stack)))
+
+        if len(stackFileMatches) == 0 and not (stack is None):
+            warnings.warn('Could not find any stack files matching stack with name {0} in folder {1}!'.format(stack,
+                                                                                                              self.__stacksFolder))
+        elif len(stackFileMatches) == 0 and stack is None:
+            warnings.warn('Could not find any stack files in folder {0}!'.format(self.__stacksFolder))
+
+        return stackFileMatches
+
+
     def __GetStackNames(self, stack = None):
         stacks = self.__artifactStore.List()
         composeStackBaseNames = []
@@ -116,18 +167,7 @@ class StackHandler:
 
 
     def __DeployStack(self, stack = None, ignoreInfrastructure = True):
-        if not(self.__offline):
-            self.__PullStacks(stack)
-
-        if stack is None:
-            stackFileMatches = glob.glob(os.path.join(self.__stacksFolder, 'docker-compose.*.y*ml'))
-        else:
-            stackFileMatches = glob.glob(os.path.join(self.__stacksFolder, 'docker-compose.{0}.y*ml'.format(stack)))
-
-        if len(stackFileMatches) == 0 and not(stack is None):
-            warnings.warn('Could not find any stack files matching stack with name {0} in folder {1}!'.format(stack, self.__stacksFolder))
-        elif len(stackFileMatches) == 0 and stack is None:
-            warnings.warn('Could not find any stack files in folder {0}!'.format(self.__stacksFolder))
+        stackFileMatches = self.__GetStackFileMatches(stack)
 
         for stackFile in stackFileMatches:
             stackName = self.__ParseStackNameFromComposeFilename(stackFile)

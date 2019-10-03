@@ -25,6 +25,15 @@ class TestMain(unittest.TestCase):
         args = ['ls'] + defaultArgs
         Main.Main(args)
 
+        args = ['verify', 'nginx_test_digest'] + defaultArgs
+        Main.Main(args)
+
+        args = ['verify', 'nginx_test_digest', '--verify-images'] + defaultArgs
+        self.assertRaises(Exception, Main.Main, args)
+
+        args = ['verify'] + defaultArgs
+        self.assertRaises(Exception, Main.Main, args)
+
 
 
 

@@ -19,6 +19,7 @@ def Main(args = None, stackHandler: StackHandler = None):
                              + "prune all stacks with 'prune', \r\n"
                              + "pull stacks with 'pull', \r\n"
                              + "push stacks with 'push'. \r\n"
+                             + "verify stacks with 'verify'. \r\n"
                              + "Append stacks to handle following the action. \r\n"
                              + "If no stacks are provided, then all stacks are deployed/removed. \r\n"
                              + "Example: '{0} deploy stack1 stack2' \r\n".format(PACKAGE_CONSOLE_NAME))
@@ -33,6 +34,7 @@ def Main(args = None, stackHandler: StackHandler = None):
     parser.add_argument("--offline", help="Add --offline to work offline.", action='store_true')
     parser.add_argument("--remove-files", help="Add --remove-files to remove files from local storage when removing stacks.", action='store_true')
     parser.add_argument("--verify-uri", help="Add --verify-uri to verify jfrog uri certificate.", action='store_true')
+    parser.add_argument("--verify-images", help="Add --verify-images to validate required labels on images during the 'verify' action.", action='store_true')
     parser.add_argument("-i", "--infrastructure", type=str, nargs='+', help="Specify infrastructure stacks to use. Default is ['infrastructure'].", default=['infrastructure'])
     args = parser.parse_args(args)
 
@@ -51,6 +53,7 @@ def Main(args = None, stackHandler: StackHandler = None):
     offline = args.offline
     removeFiles = args.remove_files
     verifyUri = args.verify_uri
+    verifyImages = args.verify_images
     infrastructureStacks = args.infrastructure
 
     ExposeEnvironmentVariables(envVariables)
@@ -78,7 +81,8 @@ def Main(args = None, stackHandler: StackHandler = None):
                                     stacksFolder=stacksFolder,
                                     infrastructureStacks=infrastructureStacks,
                                     offline=offline,
-                                    removeFiles=removeFiles)
+                                    removeFiles=removeFiles,
+                                    verifyImages=verifyImages)
 
     feedUri = artifactStore.GetFeedUri()
     HandleAction(action, stacks, feedUri, offline, stacksFolder, stackHandler)
@@ -102,6 +106,9 @@ def HandleAction(action, stacks, feedUri, offline, stacksFolder, stackHandler: S
             warnings.warn('Please provide stacks to push.')
         else:
             stackHandler.Push(stacks)
+    elif action == 'verify':
+        if not(stackHandler.Verify(stacks)):
+            raise Exception("Stacks failed verification! See warnings in log.")
     else:
         warnings.warn("No action provided, please add -help to get help.")
 

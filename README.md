@@ -44,6 +44,16 @@ Handle the docker feed by adding any of the following commands with zero or more
 - `pull` - Pull stacks from feed.
 - `push` - Push docker-compose files to feed.
   - Example: `dockerf push docker-compose.first-stack.yml docker-compose.second-stack.yml`
+- `verify` - Verify that the stacks are properly configured.
+    - Following requirements are validated:
+        1. All images must be tagged with an immutable digest.
+        2. Verify that all images are labeled with following labels (Optional and activated by adding `--verify-images`):
+            - org.opencontainers.image.created
+            - org.opencontainers.image.authors
+            - org.opencontainers.image.revision
+            - org.opencontainers.image.version
+            - org.opencontainers.image.documentation
+            - org.opencontainers.image.title
 - Optional arguments:
   - `-u/--user` to specify user credentials for jfrog as `user:password`.
   - `-t/--token` to specify a token for jfrog.
@@ -56,6 +66,7 @@ Handle the docker feed by adding any of the following commands with zero or more
   - `--offline` to work offline.
   - `--remove-files` to remove matching docker-compose file from local storage when removing stacks from the Swarm.
   - `--verify-uri` to verify the jfrog uri certificate.
+  - `--verify-images` to validate required labels on images during the 'verify' action.
   - `-i/--infrastructure` to specify which infrastructure stacks to use. Default is `infrastructure`.
   - `-h/--help` for help:
     - `dockerf -h`

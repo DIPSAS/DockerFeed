@@ -40,6 +40,11 @@ class TestArtifactStore(unittest.TestCase):
         self.assertTrue('nginx_test_online' in stacks)
         self.assertTrue('infrastructure_online' in stacks)
 
+    def test_Verify(self):
+        handler: StackHandler = TestUtilities.CreateStackHandler(offline=False)
+        self.assertFalse(handler.Verify())
+        self.assertTrue(handler.Verify(['infrastructure', 'ngint_test_digest']))
+
 
 
 if __name__ == '__main__':
