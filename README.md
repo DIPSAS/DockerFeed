@@ -46,7 +46,7 @@ Handle the docker feed by adding any of the following commands with zero or more
   - Example: `dockerf push docker-compose.first-stack.yml docker-compose.second-stack.yml`
 - `verify` - Verify that the stacks are properly configured.
     - Following requirements are validated:
-        1. All images must be tagged with an immutable digest.
+        1. All images must be tagged with an immutable [digest](https://success.docker.com/article/images-tagging-vs-digests).
         2. Verify that all images are labeled with following labels (Optional and activated by adding `--verify-images`):
             - org.opencontainers.image.created
             - org.opencontainers.image.authors
