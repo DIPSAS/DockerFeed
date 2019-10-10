@@ -70,11 +70,11 @@ Handle the docker feed by adding any of the following commands with zero or more
   - `--offline` to work offline.
   - `--remove-files` to remove matching docker-compose file from local storage when removing stacks from the Swarm.
   - `--verify-uri` to verify the jfrog uri certificate.
-  - `--verify-stacks-on-deploy` to deploy only valid stacks during the 'deploy' action.
-  - `--verify-images` to validate required labels on images during the 'verify' action.
-  - `--verify-no-configs` to validate that no Swarm configs are used in stack during the 'verify' action.
-  - `--verify-no-secrets` to validate that no Swarm secrets are used in stack during the 'verify' action.
-  - `--verify-no-volumes` to validate that no Swarm volumes are used in stack during the 'verify' action.
+  - `--verify-stacks-on-deploy` to deploy only valid stacks.
+  - `--verify-images` to validate required labels on images.
+  - `--verify-no-configs` to validate that no Swarm configs are used in stack.
+  - `--verify-no-secrets` to validate that no Swarm secrets are used in stack.
+  - `--verify-no-volumes` to validate that no Swarm volumes are used in stack.
   - `-i/--infrastructure` to specify which infrastructure stacks to use. Default is `infrastructure`.
   - `-h/--help` for help:
     - `dockerf -h`
