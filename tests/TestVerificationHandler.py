@@ -18,6 +18,18 @@ class TestVerificationHandler(unittest.TestCase):
         composeFile = "tests/testStacks/docker-compose.nginx_test_digest.yml"
         self.assertFalse(VerificationHandler.VerifyComposeFile(composeFile, requiredImageLabels=requiredImageLabels))
 
+    def test_VerifyComposeFiles_InvalidConfigs(self):
+        composeFile = "tests/invalidTestStacks/docker-compose.nginx_test_invalid_config.yml"
+        self.assertFalse(VerificationHandler.VerifyComposeFile(composeFile, verifyImages=False))
+
+    def test_VerifyComposeFiles_InvalidSecrets(self):
+        composeFile = "tests/invalidTestStacks/docker-compose.nginx_test_invalid_secret.yml"
+        self.assertFalse(VerificationHandler.VerifyComposeFile(composeFile, verifyImages=False))
+
+    def test_VerifyComposeFiles_InvalidVolumes(self):
+        composeFile = "tests/invalidTestStacks/docker-compose.nginx_test_invalid_volume.yml"
+        self.assertFalse(VerificationHandler.VerifyComposeFile(composeFile, verifyImages=False))
+
 
 
 

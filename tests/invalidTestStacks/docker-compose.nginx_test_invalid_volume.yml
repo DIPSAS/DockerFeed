@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  nginx_invalid:
+    image: nginx@sha256:aeded0f2a861747f43a01cf1018cf9efe2bdd02afd57d2b11fcc7fcadc16ccd1
+    hostname: nginx_invalid
+    volumes:
+      - nginx_data:/var/lib/nginx
+    networks:
+      - infrastructure_test_network
+
+networks:
+  infrastructure_test_network:
+    external: true
+
+volumes:
+  nginx_data:
+    external: true

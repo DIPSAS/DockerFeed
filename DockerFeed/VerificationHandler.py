@@ -15,6 +15,9 @@ DEFAULT_REQUIRED_IMAGE_LABELS = [
 def VerifyComposeFile(composeFile: str, \
                        verifyImageDigest = True, \
                        verifyImages = True, \
+                       verifyNoConfigs = True, \
+                       verifyNoSecrets = True, \
+                       verifyNoVolumes = True, \
                        requiredImageLabels = DEFAULT_REQUIRED_IMAGE_LABELS):
     yamlData = YamlTools.GetYamlData([composeFile])
 
@@ -32,6 +35,15 @@ def VerifyComposeFile(composeFile: str, \
 
         if verifyImages:
             valid &= __VerifyImage(imageName, requiredImageLabels)
+
+        if verifyNoConfigs:
+            valid &= __VerifyNoConfigs(yamlData, service)
+
+        if verifyNoSecrets:
+            valid &= __VerifyNoSecrets(yamlData, service)
+
+        if verifyNoVolumes:
+            valid &= __VerifyNoVolumes(yamlData, service)
 
     return valid
 
@@ -56,3 +68,15 @@ def __VerifyImageLabelExists(imageName: str, label: str):
         warnings.warn('Missing label {0} on image {1}'.format(label, imageName))
         return False
     return True
+
+
+def __VerifyNoConfigs(yamlData: dict, service: str):
+    return not('configs' in yamlData or 'configs' in yamlData['services'][service])
+
+
+def __VerifyNoSecrets(yamlData: dict, service: str):
+    return not('secrets' in yamlData or 'secrets' in yamlData['services'][service])
+
+
+def __VerifyNoVolumes(yamlData: dict, service: str):
+    return not('volumes' in yamlData or 'volumes' in yamlData['services'][service])

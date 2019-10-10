@@ -13,6 +13,10 @@ class TestMain(unittest.TestCase):
         Main.Main(args)
         TestUtilities.AssertInfrastructureExists(True)
 
+        args = ['deploy', '--verify-stacks-on-deploy'] + defaultArgs
+        Main.Main(args)
+        TestUtilities.AssertStacksExists(['nginx_test'], True)
+
         args = ['deploy'] + defaultArgs
         Main.Main(args)
         TestUtilities.AssertStacksExists(['nginx_test'], True)
@@ -34,6 +38,21 @@ class TestMain(unittest.TestCase):
         args = ['verify'] + defaultArgs
         self.assertRaises(Exception, Main.Main, args)
 
+    def test_DeployWithVerifyStacks(self):
+        defaultArgs = ['--storage', 'tests/invalidTestStacks', '--user', 'dummy:password', '--offline']
+        args = ['init'] + defaultArgs
+        Main.Main(args)
+        TestUtilities.AssertInfrastructureExists(True)
+
+        args = ['deploy', '--verify-stacks-on-deploy', '--verify-no-configs', '--verify-no-secrets', '--verify-no-volumes'] + defaultArgs
+        Main.Main(args)
+        TestUtilities.AssertStacksExists(['nginx_test_invalid_config'], False)
+        TestUtilities.AssertStacksExists(['nginx_test_invalid_secret'], False)
+        TestUtilities.AssertStacksExists(['nginx_test_invalid_volume'], False)
+
+        args = ['prune'] + defaultArgs
+        Main.Main(args)
+        TestUtilities.AssertInfrastructureExists(False)
 
 
 

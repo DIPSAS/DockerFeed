@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  nginx_invalid:
+    image: nginx@sha256:aeded0f2a861747f43a01cf1018cf9efe2bdd02afd57d2b11fcc7fcadc16ccd1
+    hostname: nginx_invalid
+    configs:
+      - source: nginx.ssl.conf
+        target: /etc/nginx/nginx.conf
+    networks:
+      - infrastructure_test_network
+
+networks:
+  infrastructure_test_network:
+    external: true
+
+configs:
+  nginx.ssl.conf:
+    external: true

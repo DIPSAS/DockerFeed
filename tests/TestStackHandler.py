@@ -2,15 +2,28 @@ import unittest
 from DockerFeed.StackHandler import StackHandler
 from tests import TestUtilities
 
-class TestArtifactStore(unittest.TestCase):
+class TestStackHandler(unittest.TestCase):
 
     def test_DeployRemove(self):
         handler: StackHandler = TestUtilities.CreateStackHandler()
         handler.Init()
         TestUtilities.AssertInfrastructureExists(True)
-        handler.Deploy(['nginx_test'])
+        handler.Deploy(['nginx_test'], verifyStacksOnDeploy=False)
         TestUtilities.AssertStacksExists(["nginx_test"], True)
         handler.Remove(['nginx_test'])
+        TestUtilities.AssertStacksExists(["nginx_test"], False)
+        handler.Remove(["infrastructure"], ignoreInfrastructure=False)
+        TestUtilities.AssertInfrastructureExists(False)
+
+    def test_DeployOnlyValidStacks(self):
+        handler: StackHandler = TestUtilities.CreateStackHandler(stacksFolder="tests/invalidTestStacks")
+        handler.Init()
+        TestUtilities.AssertInfrastructureExists(True)
+        handler.Deploy(['nginx_test_invalid_config'], verifyStacksOnDeploy=True)
+        TestUtilities.AssertStacksExists(["nginx_test"], False)
+        handler.Deploy(['nginx_test_invalid_secret'], verifyStacksOnDeploy=True)
+        TestUtilities.AssertStacksExists(["nginx_test"], False)
+        handler.Deploy(['nginx_test_invalid_volume'], verifyStacksOnDeploy=True)
         TestUtilities.AssertStacksExists(["nginx_test"], False)
         handler.Remove(["infrastructure"], ignoreInfrastructure=False)
         TestUtilities.AssertInfrastructureExists(False)
@@ -19,7 +32,7 @@ class TestArtifactStore(unittest.TestCase):
         handler: StackHandler = TestUtilities.CreateStackHandler()
         handler.Init()
         TestUtilities.AssertInfrastructureExists(True)
-        handler.Deploy()
+        handler.Deploy(verifyStacksOnDeploy=False)
         TestUtilities.AssertStacksExists(['nginx_test'], True)
         handler.Prune()
         TestUtilities.AssertStacksExists(['nginx_test'], False)
@@ -41,7 +54,7 @@ class TestArtifactStore(unittest.TestCase):
         self.assertTrue('infrastructure_online' in stacks)
 
     def test_Verify(self):
-        handler: StackHandler = TestUtilities.CreateStackHandler(offline=False)
+        handler: StackHandler = TestUtilities.CreateStackHandler()
         self.assertFalse(handler.Verify())
         self.assertTrue(handler.Verify(['infrastructure', 'ngint_test_digest']))
 

@@ -34,7 +34,11 @@ def Main(args = None, stackHandler: StackHandler = None):
     parser.add_argument("--offline", help="Add --offline to work offline.", action='store_true')
     parser.add_argument("--remove-files", help="Add --remove-files to remove files from local storage when removing stacks.", action='store_true')
     parser.add_argument("--verify-uri", help="Add --verify-uri to verify jfrog uri certificate.", action='store_true')
+    parser.add_argument("--verify-stacks-on-deploy", help="Add --verify-stacks-on-deploy to deploy only valid stacks during the 'deploy' action.", action='store_true')
     parser.add_argument("--verify-images", help="Add --verify-images to validate required labels on images during the 'verify' action.", action='store_true')
+    parser.add_argument("--verify-no-configs", help="Add --verify-no-configs to validate that no Swarm configs are used in stack during the 'verify' action.", action='store_true')
+    parser.add_argument("--verify-no-secrets", help="Add --verify-no-secrets to validate that no Swarm secrets are used in stack during the 'verify' action.", action='store_true')
+    parser.add_argument("--verify-no-volumes", help="Add --verify-no-volumes to validate that no Swarm volumes are used in stack during the 'verify' action.", action='store_true')
     parser.add_argument("-i", "--infrastructure", type=str, nargs='+', help="Specify infrastructure stacks to use. Default is ['infrastructure'].", default=['infrastructure'])
     args = parser.parse_args(args)
 
@@ -53,7 +57,11 @@ def Main(args = None, stackHandler: StackHandler = None):
     offline = args.offline
     removeFiles = args.remove_files
     verifyUri = args.verify_uri
+    verifyStacksOnDeploy = args.verify_stacks_on_deploy
     verifyImages = args.verify_images
+    verifyNoConfigs = args.verify_no_configs
+    verifyNoSecrets = args.verify_no_secrets
+    verifyNoVolumes = args.verify_no_volumes
     infrastructureStacks = args.infrastructure
 
     ExposeEnvironmentVariables(envVariables)
@@ -82,17 +90,20 @@ def Main(args = None, stackHandler: StackHandler = None):
                                     infrastructureStacks=infrastructureStacks,
                                     offline=offline,
                                     removeFiles=removeFiles,
-                                    verifyImages=verifyImages)
+                                    verifyImages=verifyImages,
+                                    verifyNoConfigs=verifyNoConfigs,
+                                    verifyNoSecrets=verifyNoSecrets,
+                                    verifyNoVolumes=verifyNoVolumes)
 
     feedUri = artifactStore.GetFeedUri()
-    HandleAction(action, stacks, feedUri, offline, stacksFolder, stackHandler)
+    HandleAction(action, stacks, feedUri, offline, stacksFolder, stackHandler, verifyStacksOnDeploy)
 
 
-def HandleAction(action, stacks, feedUri, offline, stacksFolder, stackHandler: StackHandler):
+def HandleAction(action, stacks, feedUri, offline, stacksFolder, stackHandler: StackHandler, verifyStacksOnDeploy):
     if action == 'init':
         stackHandler.Init()
     elif action == 'deploy':
-        stackHandler.Deploy(stacks)
+        stackHandler.Deploy(stacks, verifyStacksOnDeploy=verifyStacksOnDeploy)
     elif action == 'rm' or action == 'remove':
         stackHandler.Remove(stacks)
     elif action == 'ls' or action == 'list':

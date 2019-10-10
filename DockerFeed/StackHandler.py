@@ -16,6 +16,9 @@ class StackHandler:
                  environmentFiles = [],
                  verifyImageDigest=True, \
                  verifyImages=True, \
+                 verifyNoConfigs=True, \
+                 verifyNoSecrets=True, \
+                 verifyNoVolumes=True, \
                  requiredImageLabels=VerificationHandler.DEFAULT_REQUIRED_IMAGE_LABELS):
 
         self.__artifactStore = artifactStore
@@ -26,6 +29,9 @@ class StackHandler:
         self.__environmentFiles = environmentFiles
         self.__verifyImageDigest = verifyImageDigest
         self.__verifyImages = verifyImages
+        self.__verifyNoConfigs = verifyNoConfigs
+        self.__verifyNoSecrets = verifyNoSecrets
+        self.__verifyNoVolumes = verifyNoVolumes
         self.__requiredImageLabels = requiredImageLabels
         os.makedirs(self.__stacksFolder, exist_ok=True)
 
@@ -57,12 +63,12 @@ class StackHandler:
             self.__DeployStack(infrastructureStack, ignoreInfrastructure=False)
 
 
-    def Deploy(self, stacks = None, ignoreInfrastructure = True):
+    def Deploy(self, stacks = None, ignoreInfrastructure = True, verifyStacksOnDeploy=True):
         if stacks is None:
-            self.__DeployStack(ignoreInfrastructure=ignoreInfrastructure)
+            self.__DeployStack(ignoreInfrastructure=ignoreInfrastructure, verifyStacksOnDeploy=verifyStacksOnDeploy)
         else:
             for stack in stacks:
-                self.__DeployStack(stack, ignoreInfrastructure=ignoreInfrastructure)
+                self.__DeployStack(stack, ignoreInfrastructure=ignoreInfrastructure, verifyStacksOnDeploy=verifyStacksOnDeploy)
 
 
     def Remove(self, stacks=None, ignoreInfrastructure=True):
@@ -110,11 +116,7 @@ class StackHandler:
             stackName = self.__ParseStackNameFromComposeFilename(stackFile)
             if stackName in self.__infrastructureStacks:
                 continue
-
-            valid &= VerificationHandler.VerifyComposeFile(stackFile, \
-                                                           self.__verifyImageDigest, \
-                                                           self.__verifyImages, \
-                                                           self.__requiredImageLabels)
+            valid &= self.__VerifyStack(stackFile)
         if valid:
             print("Successfully validated stacks!")
         else:
@@ -166,7 +168,7 @@ class StackHandler:
         return stackName
 
 
-    def __DeployStack(self, stack = None, ignoreInfrastructure = True):
+    def __DeployStack(self, stack = None, ignoreInfrastructure = True, verifyStacksOnDeploy=True):
         stackFileMatches = self.__GetStackFileMatches(stack)
 
         for stackFile in stackFileMatches:
@@ -175,7 +177,13 @@ class StackHandler:
                 if not(ignoreInfrastructure):
                     InfrastructureHandler.CreateInfrastructure(stackFile)
             else:
-                DockerSwarmTools.DeployStack(stackFile, stackName, self.__environmentFiles)
+                valid = True
+                if verifyStacksOnDeploy:
+                    valid = self.__VerifyStack(stackFile)
+                if valid:
+                    DockerSwarmTools.DeployStack(stackFile, stackName, self.__environmentFiles)
+                else:
+                    warnings.warn("Skipping deployment of stack {0} since it is invalid!".format(stackName))
 
 
     def __RemoveStack(self, stack = None, ignoreInfrastructure = True):
@@ -218,3 +226,13 @@ class StackHandler:
                 removedStackFiles.append(infrastructureStackFile)
 
         return removedStackFiles
+
+
+    def __VerifyStack(self, stackFile):
+        return VerificationHandler.VerifyComposeFile(stackFile, \
+                                                      self.__verifyImageDigest, \
+                                                      self.__verifyImages, \
+                                                      self.__verifyNoConfigs, \
+                                                      self.__verifyNoSecrets, \
+                                                      self.__verifyNoVolumes, \
+                                                      self.__requiredImageLabels)
