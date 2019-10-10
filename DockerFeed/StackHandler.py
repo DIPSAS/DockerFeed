@@ -7,23 +7,26 @@ import glob
 import warnings
 
 class StackHandler:
-    def __init__(self, \
-                 artifactStore: ArtifactStore, \
-                 stacksFolder = 'stacks', \
+    def __init__(self,
+                 artifactStore: ArtifactStore,
+                 stacksFolder = 'stacks',
                  infrastructureStacks = ['infrastructure'],
+                 ignoredStacks = [],
                  offline = False,
                  removeFiles = False,
                  environmentFiles = [],
-                 verifyImageDigest=True, \
-                 verifyImages=True, \
-                 verifyNoConfigs=True, \
-                 verifyNoSecrets=True, \
-                 verifyNoVolumes=True, \
+                 verifyImageDigest=True,
+                 verifyImages=True,
+                 verifyNoConfigs=True,
+                 verifyNoSecrets=True,
+                 verifyNoVolumes=True,
+                 verifyNoPorts=True,
                  requiredImageLabels=VerificationHandler.DEFAULT_REQUIRED_IMAGE_LABELS):
 
         self.__artifactStore = artifactStore
         self.__stacksFolder = stacksFolder
         self.__infrastructureStacks = infrastructureStacks
+        self.__ignoredStacks = ignoredStacks
         self.__offline = offline
         self.__removeFiles = removeFiles
         self.__environmentFiles = environmentFiles
@@ -32,6 +35,7 @@ class StackHandler:
         self.__verifyNoConfigs = verifyNoConfigs
         self.__verifyNoSecrets = verifyNoSecrets
         self.__verifyNoVolumes = verifyNoVolumes
+        self.__verifyNoPorts = verifyNoPorts
         self.__requiredImageLabels = requiredImageLabels
         os.makedirs(self.__stacksFolder, exist_ok=True)
 
@@ -49,11 +53,18 @@ class StackHandler:
         if stacks is None:
             composeFiles = self.__GetStackNames()
             for composeFile in composeFiles:
-                self.__artifactStore.Pull(composeFile, self.__stacksFolder)
+                stack = self.__ParseStackNameFromComposeFilename(composeFile)
+                if stack in self.__ignoredStacks:
+                    warnings.warn("Ignoring pull of stack {0}".format(stack))
+                else:
+                    self.__artifactStore.Pull(composeFile, self.__stacksFolder)
         else:
             for stack in stacks:
-                composeFile = 'docker-compose.{0}.yml'.format(stack)
-                self.__artifactStore.Pull(composeFile, self.__stacksFolder)
+                if stack in self.__ignoredStacks:
+                    warnings.warn("Ignoring pull of stack {0}".format(stack))
+                else:
+                    composeFile = 'docker-compose.{0}.yml'.format(stack)
+                    self.__artifactStore.Pull(composeFile, self.__stacksFolder)
         print('Locate stacks in local storage: {0}'.format(self.__stacksFolder))
 
 
@@ -114,9 +125,10 @@ class StackHandler:
         valid = True
         for stackFile in stackFileMatches:
             stackName = self.__ParseStackNameFromComposeFilename(stackFile)
-            if stackName in self.__infrastructureStacks:
-                continue
-            valid &= self.__VerifyStack(stackFile)
+            if stackName in self.__ignoredStacks:
+                warnings.warn("Ignoring validation of stack {0}".format(stackName))
+            elif not(stackName in self.__infrastructureStacks):
+                valid &= self.__VerifyStack(stackFile)
         if valid:
             print("Successfully validated stacks!")
         else:
@@ -173,6 +185,10 @@ class StackHandler:
 
         for stackFile in stackFileMatches:
             stackName = self.__ParseStackNameFromComposeFilename(stackFile)
+            if stackName in self.__ignoredStacks:
+                warnings.warn("Ignoring deployment of stack {0}".format(stackName))
+                continue
+
             if stackName in self.__infrastructureStacks:
                 if not(ignoreInfrastructure):
                     InfrastructureHandler.CreateInfrastructure(stackFile)
@@ -190,14 +206,14 @@ class StackHandler:
         removedStackFiles = []
         if stack is None:
             removedStackFiles += self.__RemoveAllStacks(ignoreInfrastructure=ignoreInfrastructure)
-
+        elif stack in self.__ignoredStacks:
+            warnings.warn("Ignoring removal of stack {0}".format(stack))
         elif stack in self.__infrastructureStacks:
             if not(ignoreInfrastructure):
                 stackFileMatches = glob.glob(os.path.join(self.__stacksFolder, 'docker-compose.{0}.y*ml'.format(stack)))
                 for stackFile in stackFileMatches:
                     InfrastructureHandler.RemoveInfrastructure(stackFile)
                     removedStackFiles.append(stackFile)
-
         else:
             DockerSwarmTools.RemoveStack(stack)
             stackFileMatches = glob.glob(os.path.join(self.__stacksFolder, 'docker-compose.{0}.y*ml'.format(stack)))
@@ -214,7 +230,9 @@ class StackHandler:
         stackFileMatches = glob.glob(os.path.join(self.__stacksFolder, 'docker-compose.*.y*ml'))
         for stackFile in stackFileMatches:
             stackName = self.__ParseStackNameFromComposeFilename(stackFile)
-            if stackName in self.__infrastructureStacks:
+            if stackName in self.__ignoredStacks:
+                warnings.warn("Ignoring removal of stack {0}".format(stackName))
+            elif stackName in self.__infrastructureStacks:
                 infrastructureStackFiles.append(stackFile)
             else:
                 DockerSwarmTools.RemoveStack(stackName)
@@ -229,10 +247,11 @@ class StackHandler:
 
 
     def __VerifyStack(self, stackFile):
-        return VerificationHandler.VerifyComposeFile(stackFile, \
-                                                      self.__verifyImageDigest, \
-                                                      self.__verifyImages, \
-                                                      self.__verifyNoConfigs, \
-                                                      self.__verifyNoSecrets, \
-                                                      self.__verifyNoVolumes, \
+        return VerificationHandler.VerifyComposeFile(stackFile,
+                                                      self.__verifyImageDigest,
+                                                      self.__verifyImages,
+                                                      self.__verifyNoConfigs,
+                                                      self.__verifyNoSecrets,
+                                                      self.__verifyNoVolumes,
+                                                      self.__verifyNoPorts,
                                                       self.__requiredImageLabels)

@@ -30,6 +30,10 @@ class TestVerificationHandler(unittest.TestCase):
         composeFile = "tests/invalidTestStacks/docker-compose.nginx_test_invalid_volume.yml"
         self.assertFalse(VerificationHandler.VerifyComposeFile(composeFile, verifyImages=False))
 
+    def test_VerifyComposeFiles_InvalidPorts(self):
+        composeFile = "tests/invalidTestStacks/docker-compose.nginx_test_invalid_port.yml"
+        self.assertFalse(VerificationHandler.VerifyComposeFile(composeFile, verifyImages=False))
+
 
 
 

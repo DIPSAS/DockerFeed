@@ -16,9 +16,17 @@ def CreateArtifactStore(mock = False):
                                              'tests/testStacks/docker-compose.nginx_test_online.yml'])
     return mockStore
 
-def CreateStackHandler(offline = False, mockStore = True, stacksFolder="tests/testStacks", verifyImages=False):
+def CreateStackHandler(offline = False,
+                       mockStore = True,
+                       stacksFolder="tests/testStacks",
+                       verifyImages=False,
+                       ignoredStacks = ['nginx_test_ignored']):
     store = CreateArtifactStore(mockStore)
-    return StackHandler(store, offline=offline, stacksFolder=stacksFolder, verifyImages=verifyImages)
+    return StackHandler(store,
+                        offline=offline,
+                        stacksFolder=stacksFolder,
+                        verifyImages=verifyImages,
+                        ignoredStacks=ignoredStacks)
 
 def AssertInfrastructureExists(expected = True):
     terminalCommand = "docker network ls"

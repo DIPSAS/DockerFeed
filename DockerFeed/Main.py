@@ -30,6 +30,7 @@ def Main(args = None, stackHandler: StackHandler = None):
     parser.add_argument("-s", "--storage", type=str, help="Specify storage folder to use for local storage of compose files.", default=None)
     parser.add_argument("-e", "--env", type=str, nargs='+', help="Add environment variables to expose as <envKey=envValue>. "
                                                                  "A present '.env' file will be handled as an environment file to expose.", default=[])
+    parser.add_argument("--ignored-stacks", type=str, nargs='+', help="Add a list of stacks to ignore.", default=[])
     parser.add_argument("--uri", type=str, help="Specify jfrog uri. Default is {0}".format(DEFAULT_URI), default=DEFAULT_URI)
     parser.add_argument("--offline", help="Add --offline to work offline.", action='store_true')
     parser.add_argument("--remove-files", help="Add --remove-files to remove files from local storage when removing stacks.", action='store_true')
@@ -39,6 +40,7 @@ def Main(args = None, stackHandler: StackHandler = None):
     parser.add_argument("--verify-no-configs", help="Add --verify-no-configs to validate that no Swarm configs are used in stack.", action='store_true')
     parser.add_argument("--verify-no-secrets", help="Add --verify-no-secrets to validate that no Swarm secrets are used in stack.", action='store_true')
     parser.add_argument("--verify-no-volumes", help="Add --verify-no-volumes to validate that no Swarm volumes are used in stack.", action='store_true')
+    parser.add_argument("--verify-no-ports", help="Add --verify-no-ports to validate that no ports are exposed in stack.", action='store_true')
     parser.add_argument("-i", "--infrastructure", type=str, nargs='+', help="Specify infrastructure stacks to use. Default is ['infrastructure'].", default=['infrastructure'])
     args = parser.parse_args(args)
 
@@ -53,6 +55,7 @@ def Main(args = None, stackHandler: StackHandler = None):
     feed = args.feed
     storage = args.storage
     envVariables = args.env
+    ignoredStacks = args.ignored_stacks
     uri = args.uri
     offline = args.offline
     removeFiles = args.remove_files
@@ -62,6 +65,7 @@ def Main(args = None, stackHandler: StackHandler = None):
     verifyNoConfigs = args.verify_no_configs
     verifyNoSecrets = args.verify_no_secrets
     verifyNoVolumes = args.verify_no_volumes
+    verifyNoPorts = args.verify_no_ports
     infrastructureStacks = args.infrastructure
 
     ExposeEnvironmentVariables(envVariables)
@@ -88,12 +92,14 @@ def Main(args = None, stackHandler: StackHandler = None):
         stackHandler = StackHandler(artifactStore,
                                     stacksFolder=stacksFolder,
                                     infrastructureStacks=infrastructureStacks,
+                                    ignoredStacks=ignoredStacks,
                                     offline=offline,
                                     removeFiles=removeFiles,
                                     verifyImages=verifyImages,
                                     verifyNoConfigs=verifyNoConfigs,
                                     verifyNoSecrets=verifyNoSecrets,
-                                    verifyNoVolumes=verifyNoVolumes)
+                                    verifyNoVolumes=verifyNoVolumes,
+                                    verifyNoPorts=verifyNoPorts)
 
     feedUri = artifactStore.GetFeedUri()
     HandleAction(action, stacks, feedUri, offline, stacksFolder, stackHandler, verifyStacksOnDeploy)

@@ -58,6 +58,7 @@ Handle the docker feed by adding any of the following commands with zero or more
             - `--verify-no-configs`
             - `--verify-no-secrets`
             - `--verify-no-volumes`
+            - `--verify-no-ports`
 - Optional arguments:
   - `-u/--user` to specify user credentials for jfrog as `user:password`.
   - `-t/--token` to specify a token for jfrog.
@@ -66,6 +67,7 @@ Handle the docker feed by adding any of the following commands with zero or more
   - `-e/--env` with environment variables to expose as `envKey=envValue`:
     - `dockerf dp -e key1=variable1 key2=variable2`
     - Alternatively, any present `.env` will be considered as a file with environment variables to expose.
+  - `--ignored-stacks` followed by a list of stacks to ignore.
   - `--uri` to specify the jfrog uri. Default is `https://artifacts/`.
   - `--offline` to work offline.
   - `--remove-files` to remove matching docker-compose file from local storage when removing stacks from the Swarm.
@@ -75,6 +77,7 @@ Handle the docker feed by adding any of the following commands with zero or more
   - `--verify-no-configs` to validate that no Swarm configs are used in stack.
   - `--verify-no-secrets` to validate that no Swarm secrets are used in stack.
   - `--verify-no-volumes` to validate that no Swarm volumes are used in stack.
+  - `--verify-no-ports` to validate that no ports are exposed in stack.
   - `-i/--infrastructure` to specify which infrastructure stacks to use. Default is `infrastructure`.
   - `-h/--help` for help:
     - `dockerf -h`

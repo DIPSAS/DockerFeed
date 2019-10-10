@@ -12,12 +12,13 @@ DEFAULT_REQUIRED_IMAGE_LABELS = [
 ]
 
 
-def VerifyComposeFile(composeFile: str, \
-                       verifyImageDigest = True, \
-                       verifyImages = True, \
-                       verifyNoConfigs = True, \
-                       verifyNoSecrets = True, \
-                       verifyNoVolumes = True, \
+def VerifyComposeFile(composeFile: str,
+                       verifyImageDigest = True,
+                       verifyImages = True,
+                       verifyNoConfigs = True,
+                       verifyNoSecrets = True,
+                       verifyNoVolumes = True,
+                       verifyNoPorts = True,
                        requiredImageLabels = DEFAULT_REQUIRED_IMAGE_LABELS):
     yamlData = YamlTools.GetYamlData([composeFile])
 
@@ -45,6 +46,9 @@ def VerifyComposeFile(composeFile: str, \
         if verifyNoVolumes:
             valid &= __VerifyNoVolumes(yamlData, service)
 
+        if verifyNoPorts:
+            valid &= __VerifyNoPorts(yamlData, service)
+
     return valid
 
 
@@ -71,12 +75,28 @@ def __VerifyImageLabelExists(imageName: str, label: str):
 
 
 def __VerifyNoConfigs(yamlData: dict, service: str):
-    return not('configs' in yamlData or 'configs' in yamlData['services'][service])
+    if 'configs' in yamlData or 'configs' in yamlData['services'][service]:
+        warnings.warn('Invalid configs detected in service {0}'.format(service))
+        return False
+    return True
 
 
 def __VerifyNoSecrets(yamlData: dict, service: str):
-    return not('secrets' in yamlData or 'secrets' in yamlData['services'][service])
+    if 'secrets' in yamlData or 'secrets' in yamlData['services'][service]:
+        warnings.warn('Invalid secrets detected in service {0}'.format(service))
+        return False
+    return True
 
 
 def __VerifyNoVolumes(yamlData: dict, service: str):
-    return not('volumes' in yamlData or 'volumes' in yamlData['services'][service])
+    if 'volumes' in yamlData or 'volumes' in yamlData['services'][service]:
+        warnings.warn('Invalid volumes detected in service {0}'.format(service))
+        return False
+    return True
+
+
+def __VerifyNoPorts(yamlData: dict, service: str):
+    if 'ports' in yamlData['services'][service]:
+        warnings.warn('Invalid ports detected in service {0}'.format(service))
+        return False
+    return True
