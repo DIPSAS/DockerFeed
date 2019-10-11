@@ -9,7 +9,7 @@ DEFAULT_URI = 'https://artifacts/'
 DEFAULT_FEED = 'docker-delivery'
 PACKAGE_CONSOLE_NAME = 'DockerFeed'
 
-def Main(args = None, stackHandler: StackHandler = None):
+def Main(args = None, stackHandler: StackHandler = None, artifactStore: ArtifactStore = None):
     parser = argparse.ArgumentParser()
     parser.add_argument("action", type=str, nargs='+',
                         help="Initialize swarm with 'init', \r\n"
@@ -80,7 +80,7 @@ def Main(args = None, stackHandler: StackHandler = None):
     else:
         stacksFolder = os.path.join(os.getcwd(), storage)
 
-    if stackHandler is None:
+    if artifactStore is None:
         artifactStore = ArtifactStore(
             username=username,
             password=password,
@@ -89,6 +89,7 @@ def Main(args = None, stackHandler: StackHandler = None):
             uri=uri,
             verifyCertificate=verifyUri)
 
+    if stackHandler is None:
         stackHandler = StackHandler(artifactStore,
                                     stacksFolder=stacksFolder,
                                     infrastructureStacks=infrastructureStacks,
