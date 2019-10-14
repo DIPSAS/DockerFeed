@@ -6,11 +6,13 @@ import os
 import glob
 import warnings
 import random
+from datetime import datetime
 
 class StackHandler:
     def __init__(self,
                  artifactStore: ArtifactStore,
                  stacksFolder = 'stacks',
+                 logsFolder = 'logs',
                  infrastructureStacks = ['infrastructure'],
                  ignoredStacks = [],
                  offline = False,
@@ -26,6 +28,7 @@ class StackHandler:
 
         self.__artifactStore = artifactStore
         self.__stacksFolder = stacksFolder
+        self.__logsFolder = logsFolder
         self.__infrastructureStacks = infrastructureStacks
         self.__ignoredStacks = ignoredStacks
         self.__offline = offline
@@ -193,6 +196,7 @@ class StackHandler:
 
 
     def __RunStack(self, stack = None):
+        os.makedirs(self.__logsFolder, exist_ok=True)
         stackFileMatches = self.__GetStackFileMatches(stack)
 
         for environmentVariablesFile in self.__environmentFiles:
@@ -251,6 +255,7 @@ class StackHandler:
 
             containerName = yamlData['services'][service]['container_name']
             exitCode = DockerImageTools.GetContainerExitCode(containerName)
+            self.__WriteLogsFromContainerToFile(containerName, service, stackName)
             sumExitCodes += exitCode
             if exitCode > 0:
                 warnings.warn("Container '" + containerName + "' FAILED!")
@@ -258,6 +263,21 @@ class StackHandler:
                 print(containerName + " container finished with success.")
 
         return sumExitCodes
+
+
+    def __WriteLogsFromContainerToFile(self, containerName: str, service: str, stackName: str):
+        logs = self.__GetLogsFromContainer(containerName)
+        dateTimeNow = datetime.now()
+        timestampStr = dateTimeNow.strftime("%Y%m%dT%H%M%S")
+        logFile = os.path.join(self.__logsFolder, "{0}.{1}.{2}-{3}.log".format(stackName, service, containerName, timestampStr))
+        with open(logFile, "a+") as f:
+            f.write(logs)
+
+
+    def __GetLogsFromContainer(self, containerName: str):
+        terminalCommand = 'docker logs {0}'.format(containerName)
+        logs = str(TerminalTools.ExecuteTerminalCommandAndGetOutput(terminalCommand).decode("utf-8"))
+        return logs
 
 
     def __DeployStack(self, stack = None, ignoreInfrastructure = True, verifyStacksOnDeploy=True):

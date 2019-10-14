@@ -32,19 +32,20 @@ The Docker Feed tool is available as the command line tool `dockerf`.
 Handle the docker feed by adding any of the following commands with zero or more stacks to handle.
 - `init` - Initialize Swarm.
 - `deploy` - Deploy stacks to Swarm.
-  - Adding no specific stacks to deploy will result in deploying all stacks.
-  - Example: `dockerf deploy first-stack second-stack`
+    - Adding no specific stacks to deploy will result in deploying all stacks.
+    - Example: `dockerf deploy first-stack second-stack`
 - `rm`/`remove` - Remove stacks from Swarm.
-  - Adding no specific stacks to remove will result in removing all stacks.
-  - Example: `dockerf remove first-stack second-stack`
+    - Adding no specific stacks to remove will result in removing all stacks.
+    - Example: `dockerf remove first-stack second-stack`
 - `ls/list` - List stacks on feed.
     - Hint, add search criterias following `ls`, such as:
     - `dockerf ls first-stack second-stack`
 - `prune` - Remove all stacks.
 - `pull` - Pull stacks from feed.
 - `push` - Push docker-compose files to feed.
-  - Example: `dockerf push docker-compose.first-stack.yml docker-compose.second-stack.yml`
+    - Example: `dockerf push docker-compose.first-stack.yml docker-compose.second-stack.yml`
 - `run` - Run stacks as batch processes.
+    - Logs from each process is stored in a `logs` folder in the working directory. 
 - `verify` - Verify that the stacks are properly configured.
     - Following requirements are validated:
         1. All images must be tagged with an immutable [digest](https://success.docker.com/article/images-tagging-vs-digests).

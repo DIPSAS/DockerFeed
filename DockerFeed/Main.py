@@ -55,6 +55,7 @@ def Main(args = None, stackHandler: StackHandler = None, artifactStore: Artifact
     token = args.token
     feed = args.feed
     storage = args.storage
+    logsFolder = os.path.join(os.getcwd(), 'logs')
     envVariables = args.env
     ignoredStacks = args.ignored_stacks
     uri = args.uri
@@ -93,6 +94,7 @@ def Main(args = None, stackHandler: StackHandler = None, artifactStore: Artifact
     if stackHandler is None:
         stackHandler = StackHandler(artifactStore,
                                     stacksFolder=stacksFolder,
+                                    logsFolder=logsFolder,
                                     infrastructureStacks=infrastructureStacks,
                                     ignoredStacks=ignoredStacks,
                                     offline=offline,

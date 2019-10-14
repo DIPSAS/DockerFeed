@@ -17,4 +17,5 @@ DockerFeed/stacks/
 .idea/
 venv/
 output/
+logs/
 ArenaDeliveryDockerStandalone/
