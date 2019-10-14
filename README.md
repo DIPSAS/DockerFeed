@@ -44,6 +44,7 @@ Handle the docker feed by adding any of the following commands with zero or more
 - `pull` - Pull stacks from feed.
 - `push` - Push docker-compose files to feed.
   - Example: `dockerf push docker-compose.first-stack.yml docker-compose.second-stack.yml`
+- `run` - Run stacks as batch processes.
 - `verify` - Verify that the stacks are properly configured.
     - Following requirements are validated:
         1. All images must be tagged with an immutable [digest](https://success.docker.com/article/images-tagging-vs-digests).

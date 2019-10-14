@@ -1,10 +1,11 @@
 from DockerFeed.ArtifactStore import ArtifactStore
 from DockerFeed import InfrastructureHandler
 from DockerFeed import VerificationHandler
-from DockerBuildSystem import DockerSwarmTools
+from DockerBuildSystem import DockerSwarmTools, DockerComposeTools, TerminalTools, YamlTools, DockerImageTools
 import os
 import glob
 import warnings
+import random
 
 class StackHandler:
     def __init__(self,
@@ -72,6 +73,17 @@ class StackHandler:
         DockerSwarmTools.StartSwarm()
         for infrastructureStack in self.__infrastructureStacks:
             self.__DeployStack(infrastructureStack, ignoreInfrastructure=False)
+
+
+    def Run(self, stacks = None):
+        sumExitCodes = 0
+        if stacks is None:
+            sumExitCodes += self.__RunStack()
+        else:
+            for stack in stacks:
+                sumExitCodes += self.__RunStack(stack)
+
+        return sumExitCodes == 0
 
 
     def Deploy(self, stacks = None, ignoreInfrastructure = True, verifyStacksOnDeploy=True):
@@ -178,6 +190,74 @@ class StackHandler:
         stackFileBasename = os.path.basename(stackFile)
         stackName = stackFileBasename[stackFileBasename.find('docker-compose.') + 15:stackFileBasename.rfind('.')]
         return stackName
+
+
+    def __RunStack(self, stack = None):
+        stackFileMatches = self.__GetStackFileMatches(stack)
+
+        for environmentVariablesFile in self.__environmentFiles:
+            TerminalTools.LoadEnvironmentVariables(environmentVariablesFile)
+
+        sumExitCodes = 0
+        for stackFile in stackFileMatches:
+            stackName = self.__ParseStackNameFromComposeFilename(stackFile)
+            if stackName in self.__ignoredStacks:
+                warnings.warn("Ignoring execution of stack {0}".format(stackName))
+                continue
+
+            if not(stackName in self.__infrastructureStacks):
+                temporaryStackFile = self.__GenerateStackFileWithContainerNames(stackFile)
+                try:
+                    DockerComposeTools.DockerComposeRemove([temporaryStackFile])
+                    DockerComposeTools.DockerComposeUp([temporaryStackFile])
+                    exitCode = self.__VerifyStackExecutedSuccessfully(temporaryStackFile, stackName)
+                    DockerComposeTools.DockerComposeDown([temporaryStackFile])
+                finally:
+                    os.remove(temporaryStackFile)
+                if exitCode > 0:
+                    warnings.warn("Stack '" + stackName + "' FAILED!")
+                else:
+                    print(stackName + " stack finished with success.")
+                sumExitCodes += exitCode
+
+        return sumExitCodes
+
+
+    def __GenerateStackFileWithContainerNames(self, stackFile: str):
+        yamlData: dict = YamlTools.GetYamlData([stackFile])
+        stackName = self.__ParseStackNameFromComposeFilename(stackFile)
+
+        random.seed()
+        randomId = random.randint(0, 1000)
+        services = yamlData.get('services', [])
+        for service in services:
+            if not('container_name' in yamlData['services'][service]):
+                yamlData['services'][service]['container_name'] = "{0}_{1}_{2}".format(stackName, service, randomId)
+
+        temporaryStackFile = os.path.join(self.__stacksFolder, "docker-compose-temp.{0}.{1}.yml".format(stackName, randomId))
+        YamlTools.DumpYamlDataToFile(yamlData, temporaryStackFile)
+        return temporaryStackFile
+
+
+    def __VerifyStackExecutedSuccessfully(self, temporaryStackFile: str, stackName: str):
+        yamlData: dict = YamlTools.GetYamlData([temporaryStackFile])
+
+        sumExitCodes = 0
+        services = yamlData.get('services', [])
+        for service in services:
+            if not('container_name' in yamlData['services'][service]):
+                raise Exception(("Cannot check exit code for service {0} in stack {1} " +
+                              "due to missing container name tag.").format(service, stackName))
+
+            containerName = yamlData['services'][service]['container_name']
+            exitCode = DockerImageTools.GetContainerExitCode(containerName)
+            sumExitCodes += exitCode
+            if exitCode > 0:
+                warnings.warn("Container '" + containerName + "' FAILED!")
+            else:
+                print(containerName + " container finished with success.")
+
+        return sumExitCodes
 
 
     def __DeployStack(self, stack = None, ignoreInfrastructure = True, verifyStacksOnDeploy=True):

@@ -1,0 +1,17 @@
+version: '3.3'
+
+services:
+    batch:
+      image: pythonsnippet
+      container_name: python_batch
+      networks:
+        - infrastructure_test_network
+      environment:
+        - SHOULD_FAIL=${SHOULD_FAIL}
+      build:
+        context: .
+        dockerfile: Dockerfile
+
+networks:
+  infrastructure_test_network:
+    external: true

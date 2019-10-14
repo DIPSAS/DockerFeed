@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- the topmost header version must be set manually in the VERSION file -->
+## [1.0.12] - 2019-10-14
+- Implemented 'run' feature for running stacks as batch processes.
+
 ## [1.0.11] - 2019-10-11
 - Added missing main script for module.
 

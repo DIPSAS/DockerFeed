@@ -62,6 +62,23 @@ class TestMain(unittest.TestCase):
         Main.Main(args)
         TestUtilities.AssertInfrastructureExists(False)
 
+    def test_RunStacks(self):
+        defaultArgs = ['--storage', 'tests/testBatchStacks', '--user', 'dummy:password', '--offline']
+        self.assertTrue(os.path.isdir('tests/testBatchStacks'))
+
+        args = ['init'] + defaultArgs
+        Main.Main(args)
+        TestUtilities.AssertInfrastructureExists(True)
+
+        os.environ['SHOULD_FAIL'] = 'false'
+        os.environ['SHOULD_FAIL_2'] = 'false'
+        args = ['run'] + defaultArgs
+        Main.Main(args)
+
+        os.environ['SHOULD_FAIL'] = 'true'
+        os.environ['SHOULD_FAIL_2'] = 'false'
+        args = ['run'] + defaultArgs
+        self.assertRaises(Exception, Main.Main, args)
 
 
 if __name__ == '__main__':

@@ -19,6 +19,7 @@ def Main(args = None, stackHandler: StackHandler = None, artifactStore: Artifact
                              + "prune all stacks with 'prune', \r\n"
                              + "pull stacks with 'pull', \r\n"
                              + "push stacks with 'push'. \r\n"
+                             + "run stacks as batch processes with 'run'. \r\n"
                              + "verify stacks with 'verify'. \r\n"
                              + "Append stacks to handle following the action. \r\n"
                              + "If no stacks are provided, then all stacks are deployed/removed. \r\n"
@@ -124,6 +125,9 @@ def HandleAction(action, stacks, feedUri, offline, stacksFolder, stackHandler: S
             warnings.warn('Please provide stacks to push.')
         else:
             stackHandler.Push(stacks)
+    elif action == 'run':
+        if not(stackHandler.Run(stacks)):
+            raise Exception("Some stacks failed execution! See warnings in log.")
     elif action == 'verify':
         if not(stackHandler.Verify(stacks)):
             raise Exception("Stacks failed verification! See warnings in log.")

@@ -1,0 +1,21 @@
+version: '3.3'
+
+services:
+    batch:
+      image: pythonsnippet
+      container_name: python_batch_2
+      networks:
+        - infrastructure_test_network
+      environment:
+        - SHOULD_FAIL=${SHOULD_FAIL_2}
+
+    batch_unkown_name:
+      image: pythonsnippet
+      networks:
+        - infrastructure_test_network
+      environment:
+        - SHOULD_FAIL=${SHOULD_FAIL_2}
+
+networks:
+  infrastructure_test_network:
+    external: true
