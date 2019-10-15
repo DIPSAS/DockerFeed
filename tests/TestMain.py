@@ -1,6 +1,7 @@
 import unittest
 import os
 from tests import TestUtilities
+from DockerBuildSystem import DockerComposeTools
 from DockerFeed import Main
 
 class TestMain(unittest.TestCase):
@@ -63,6 +64,7 @@ class TestMain(unittest.TestCase):
         TestUtilities.AssertInfrastructureExists(False)
 
     def test_RunStacks(self):
+        DockerComposeTools.DockerComposeBuild(["tests/testBatchStacks/docker-compose.batch.yml"])
         defaultArgs = ['--storage', 'tests/testBatchStacks', '--user', 'dummy:password', '--offline']
         self.assertTrue(os.path.isdir('tests/testBatchStacks'))
 
