@@ -71,6 +71,8 @@ Handle the docker feed by adding any of the following commands with zero or more
     - Alternatively, any present `.env` will be considered as a file with environment variables to expose.
   - `--ignored-stacks` followed by a list of stacks to ignore.
   - `--uri` to specify the jfrog uri. Default is `https://artifacts/`.
+  - `--logs-folder` to specify folder for storing log files when executing batch processes with 'run'. Default is './logs'.
+  - `--no-logs` to drop storing log files when executing batch processes with 'run'.
   - `--offline` to work offline.
   - `--remove-files` to remove matching docker-compose file from local storage when removing stacks from the Swarm.
   - `--verify-uri` to verify the jfrog uri certificate.

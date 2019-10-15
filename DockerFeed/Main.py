@@ -8,6 +8,7 @@ from DockerFeed.ArtifactStore import ArtifactStore
 DEFAULT_URI = 'https://artifacts/'
 DEFAULT_FEED = 'docker-delivery'
 PACKAGE_CONSOLE_NAME = 'DockerFeed'
+DEFAULT_LOGS_FOLDER = 'logs'
 
 def Main(args = None, stackHandler: StackHandler = None, artifactStore: ArtifactStore = None):
     parser = argparse.ArgumentParser()
@@ -33,6 +34,8 @@ def Main(args = None, stackHandler: StackHandler = None, artifactStore: Artifact
                                                                  "A present '.env' file will be handled as an environment file to expose.", default=[])
     parser.add_argument("--ignored-stacks", type=str, nargs='+', help="Add a list of stacks to ignore.", default=[])
     parser.add_argument("--uri", type=str, help="Specify jfrog uri. Default is {0}".format(DEFAULT_URI), default=DEFAULT_URI)
+    parser.add_argument("--logs-folder", type=str, help="Specify folder for storing log files when executing batch processes with 'run'. Default is './{0}'.".format(DEFAULT_LOGS_FOLDER), default=None)
+    parser.add_argument("--no-logs", help="Add --no-logs to drop storing log files when executing batch processes with 'run'.", action='store_true')
     parser.add_argument("--offline", help="Add --offline to work offline.", action='store_true')
     parser.add_argument("--remove-files", help="Add --remove-files to remove files from local storage when removing stacks.", action='store_true')
     parser.add_argument("--verify-uri", help="Add --verify-uri to verify jfrog uri certificate.", action='store_true')
@@ -55,7 +58,8 @@ def Main(args = None, stackHandler: StackHandler = None, artifactStore: Artifact
     token = args.token
     feed = args.feed
     storage = args.storage
-    logsFolder = os.path.join(os.getcwd(), 'logs')
+    logsFolder = args.logs_folder
+    noLogs = args.no_logs
     envVariables = args.env
     ignoredStacks = args.ignored_stacks
     uri = args.uri
@@ -82,6 +86,9 @@ def Main(args = None, stackHandler: StackHandler = None, artifactStore: Artifact
     else:
         stacksFolder = os.path.join(os.getcwd(), storage)
 
+    if logsFolder is None:
+        logsFolder = os.path.join(os.getcwd(), DEFAULT_LOGS_FOLDER)
+
     if artifactStore is None:
         artifactStore = ArtifactStore(
             username=username,
@@ -95,6 +102,7 @@ def Main(args = None, stackHandler: StackHandler = None, artifactStore: Artifact
         stackHandler = StackHandler(artifactStore,
                                     stacksFolder=stacksFolder,
                                     logsFolder=logsFolder,
+                                    noLogs=noLogs,
                                     infrastructureStacks=infrastructureStacks,
                                     ignoredStacks=ignoredStacks,
                                     offline=offline,

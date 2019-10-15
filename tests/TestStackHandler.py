@@ -68,17 +68,13 @@ class TestStackHandler(unittest.TestCase):
         handler.Init()
         os.environ['SHOULD_FAIL'] = 'false'
         os.environ['SHOULD_FAIL_2'] = 'false'
-        self.assertTrue(handler.Run(['batch']))
-        self.assertTrue(handler.Run(['batch_2']))
         self.assertTrue(handler.Run())
 
         os.environ['SHOULD_FAIL'] = 'true'
         self.assertFalse(handler.Run(['batch']))
-        self.assertFalse(handler.Run())
 
         os.environ['SHOULD_FAIL'] = 'false'
         os.environ['SHOULD_FAIL_2'] = 'true'
-        self.assertFalse(handler.Run(['batch_2']))
         self.assertFalse(handler.Run())
 
 
