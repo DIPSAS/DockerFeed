@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- the topmost header version must be set manually in the VERSION file -->
+## [1.0.14] - 2019-10-18
+- Fixed probable bug with output folder argument input.
+
 ## [1.0.13] - 2019-10-14
 - Added logs output to file for batch processes.
 

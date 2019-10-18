@@ -9,6 +9,7 @@ DEFAULT_URI = 'https://artifacts/'
 DEFAULT_FEED = 'docker-delivery'
 PACKAGE_CONSOLE_NAME = 'DockerFeed'
 DEFAULT_LOGS_FOLDER = 'logs'
+DEFAULT_STACKS_FOLDER = 'stacks'
 
 def Main(args = None, stackHandler: StackHandler = None, artifactStore: ArtifactStore = None):
     parser = argparse.ArgumentParser()
@@ -81,10 +82,10 @@ def Main(args = None, stackHandler: StackHandler = None, artifactStore: Artifact
 
     moduleDir = os.path.dirname(os.path.realpath(__file__))
     load_dotenv(os.path.join(moduleDir, 'default.env'))
-    if storage is None:
-        stacksFolder = os.path.join(moduleDir, 'stacks')
-    else:
-        stacksFolder = os.path.join(os.getcwd(), storage)
+
+    stacksFolder = storage
+    if stacksFolder is None:
+        stacksFolder = os.path.join(moduleDir, DEFAULT_STACKS_FOLDER)
 
     if logsFolder is None:
         logsFolder = os.path.join(os.getcwd(), DEFAULT_LOGS_FOLDER)
