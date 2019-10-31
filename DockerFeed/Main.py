@@ -6,8 +6,9 @@ from DockerFeed.StackHandler import StackHandler
 from DockerFeed.ArtifactStore import ArtifactStore
 
 DEFAULT_URI = 'https://artifacts/'
-DEFAULT_FEED = 'docker-delivery'
+DEFAULT_FEED = 'delivery-dev'
 PACKAGE_CONSOLE_NAME = 'DockerFeed'
+DEFAULT_CACHE_FOLDER = '.dockerfeed'
 DEFAULT_LOGS_FOLDER = 'logs'
 DEFAULT_STACKS_FOLDER = 'stacks'
 
@@ -85,7 +86,8 @@ def Main(args = None, stackHandler: StackHandler = None, artifactStore: Artifact
 
     stacksFolder = storage
     if stacksFolder is None:
-        stacksFolder = os.path.join(moduleDir, DEFAULT_STACKS_FOLDER)
+        homePath = os.path.expanduser('~')
+        stacksFolder = os.path.join(homePath, DEFAULT_CACHE_FOLDER, DEFAULT_STACKS_FOLDER)
 
     if logsFolder is None:
         logsFolder = os.path.join(os.getcwd(), DEFAULT_LOGS_FOLDER)

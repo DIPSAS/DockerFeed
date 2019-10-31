@@ -8,7 +8,7 @@ class ArtifactStore:
                  username = None, \
                  password = None, \
                  apiKey = None,
-                 feed = 'docker-delivery', \
+                 feed = 'delivery-dev', \
                  uri = 'https://artifacts/', \
                  verifyCertificate = False):
 

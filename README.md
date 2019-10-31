@@ -64,7 +64,7 @@ Handle the docker feed by adding any of the following commands with zero or more
 - Optional arguments:
   - `-u/--user` to specify user credentials for jfrog as `user:password`.
   - `-t/--token` to specify a token for jfrog.
-  - `-f/--feed` to specify the jfrog feed. Default is `docker-delivery`.
+  - `-f/--feed` to specify the jfrog feed. Default is `delivery-dev`.
   - `-s/--storage` to specify a storage folder to use for local storage of compose files.
   - `-e/--env` with environment variables to expose as `envKey=envValue`:
     - `dockerf dp -e key1=variable1 key2=variable2`
