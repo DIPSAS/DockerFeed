@@ -7,19 +7,7 @@
 Docker Feed is a simple and convenient tool for handling deployment of docker compose files to a Swarm environment.
 By convention, it locates all stacks to deploy on a [JFrog](https://jfrog.com/) feed with every stack following a docker-compose filename pattern of `docker-compose.my-stack-name.yml`.
 
-Additionally, the Swarm probably needs to initialize some network infrastructure before any stacks are deployed. This is also handled by a simple convention of treating a set of `infrastructure` stacks as yaml files with network details. By default the stack named `infrastructure`, thus the filename `docker-compose.infrastructure.yml`, will be considered as infrastructure deployment.
-
-The content of `docker-compose.infrastructure.yml` should contain network details for the Swarm which will be created on `init`, as such:
-
-```yaml
-networks:
-  swarm_encrypted_network:
-    encrypted: true
-  swarm_unencrypted_network:
-    encrypted: false
-```
-
-An another option to create the Swarm infrastructure is to define a `swarm.management.yml` file with details about which `configs`, `secrets`, `volumes` or `networks` to create. The `DockerFeed` tool will automatically detect the `swarm.management.yml` file if it exists in the current folder.
+Additionally, the Swarm probably needs to initialize some infrastructure before any stacks are deployed. This is handled by defining a `swarm.management.yml` file with details about which `configs`, `secrets`, `volumes` or `networks` to create. By convention, the `DockerFeed` tool will automatically detect the `swarm.management.yml` file if it exists in the current folder.
 Please have a look at the [SwarmManagement](https://github.com/DIPSAS/SwarmManagement) project to get more details, but following is an example on how the `swarm.management.yml` content could look like:
 
 ```yaml

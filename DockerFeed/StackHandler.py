@@ -1,5 +1,4 @@
 from DockerFeed.ArtifactStore import ArtifactStore
-from DockerFeed import InfrastructureHandler
 from DockerFeed import VerificationHandler
 from DockerFeed import StackTools
 from DockerBuildSystem import DockerSwarmTools, TerminalTools
@@ -10,10 +9,10 @@ import warnings
 class StackHandler:
     def __init__(self,
                  artifactStore: ArtifactStore,
+                 swmInfrastructureFiles = [],
                  stacksFolder = 'stacks',
                  logsFolder = 'logs',
                  noLogs = False,
-                 infrastructureStacks = ['infrastructure'],
                  ignoredStacks = [],
                  offline = False,
                  removeFiles = False,
@@ -27,10 +26,10 @@ class StackHandler:
                  requiredImageLabels=VerificationHandler.DEFAULT_REQUIRED_IMAGE_LABELS):
 
         self.__artifactStore = artifactStore
+        self.__swmInfrastructureFiles = swmInfrastructureFiles
         self.__stacksFolder = stacksFolder
         self.__logsFolder = logsFolder
         self.__noLogs = noLogs
-        self.__infrastructureStacks = infrastructureStacks
         self.__ignoredStacks = ignoredStacks
         self.__offline = offline
         self.__removeFiles = removeFiles
@@ -74,9 +73,7 @@ class StackHandler:
 
 
     def Init(self):
-        StackTools.InitWithSwarmManager()
-        for infrastructureStack in self.__infrastructureStacks:
-            self.__DeployStack(infrastructureStack, ignoreInfrastructure=False)
+        StackTools.InitWithSwarmManager(self.__swmInfrastructureFiles)
 
 
     def Run(self, stacks = None):
@@ -90,25 +87,25 @@ class StackHandler:
         return sumExitCodes == 0
 
 
-    def Deploy(self, stacks = None, ignoreInfrastructure = True, verifyStacksOnDeploy=True):
+    def Deploy(self, stacks = None, verifyStacksOnDeploy=True):
         if stacks is None:
-            self.__DeployStack(ignoreInfrastructure=ignoreInfrastructure, verifyStacksOnDeploy=verifyStacksOnDeploy)
+            self.__DeployStack(verifyStacksOnDeploy=verifyStacksOnDeploy)
         else:
             for stack in stacks:
-                self.__DeployStack(stack, ignoreInfrastructure=ignoreInfrastructure, verifyStacksOnDeploy=verifyStacksOnDeploy)
+                self.__DeployStack(stack, verifyStacksOnDeploy=verifyStacksOnDeploy)
 
 
-    def Remove(self, stacks=None, ignoreInfrastructure=True):
+    def Remove(self, stacks=None):
         if stacks is None:
-            self.__RemoveStack(ignoreInfrastructure=ignoreInfrastructure)
+            self.__RemoveStack()
         else:
             for stack in stacks:
-                self.__RemoveStack(stack, ignoreInfrastructure=ignoreInfrastructure)
+                self.__RemoveStack(stack)
 
 
     def Prune(self):
-        self.__RemoveStack(ignoreInfrastructure=False)
-        StackTools.PruneWithSwarmManager()
+        self.__RemoveStack()
+        StackTools.PruneWithSwarmManager(self.__swmInfrastructureFiles)
 
 
     def List(self, stackSearches = None):
@@ -144,7 +141,7 @@ class StackHandler:
             stackName = StackTools.ParseStackNameFromComposeFilename(stackFile)
             if stackName in self.__ignoredStacks:
                 warnings.warn("Ignoring validation of stack {0}".format(stackName))
-            elif not(stackName in self.__infrastructureStacks):
+            else:
                 valid &= self.__VerifyStack(stackFile)
         if valid:
             print("Successfully validated stacks!")
@@ -186,14 +183,13 @@ class StackHandler:
                 warnings.warn("Ignoring execution of stack {0}".format(stackName))
                 continue
 
-            if not(stackName in self.__infrastructureStacks):
-                exitCode = StackTools.ExecuteStackAsProcess(stackFile, self.__stacksFolder, self.__noLogs, self.__logsFolder)
-                sumExitCodes += exitCode
+            exitCode = StackTools.ExecuteStackAsProcess(stackFile, self.__stacksFolder, self.__noLogs, self.__logsFolder)
+            sumExitCodes += exitCode
 
         return sumExitCodes
 
 
-    def __DeployStack(self, stack = None, ignoreInfrastructure = True, verifyStacksOnDeploy=True):
+    def __DeployStack(self, stack = None, verifyStacksOnDeploy=True):
         stackFileMatches = self.__GetStackFileMatches(stack)
 
         for stackFile in stackFileMatches:
@@ -202,31 +198,21 @@ class StackHandler:
                 warnings.warn("Ignoring deployment of stack {0}".format(stackName))
                 continue
 
-            if stackName in self.__infrastructureStacks:
-                if not(ignoreInfrastructure):
-                    InfrastructureHandler.CreateInfrastructure(stackFile)
+            valid = True
+            if verifyStacksOnDeploy:
+                valid = self.__VerifyStack(stackFile)
+            if valid:
+                DockerSwarmTools.DeployStack(stackFile, stackName, self.__environmentFiles)
             else:
-                valid = True
-                if verifyStacksOnDeploy:
-                    valid = self.__VerifyStack(stackFile)
-                if valid:
-                    DockerSwarmTools.DeployStack(stackFile, stackName, self.__environmentFiles)
-                else:
-                    warnings.warn("Skipping deployment of stack {0} since it is invalid!".format(stackName))
+                warnings.warn("Skipping deployment of stack {0} since it is invalid!".format(stackName))
 
 
-    def __RemoveStack(self, stack = None, ignoreInfrastructure = True):
+    def __RemoveStack(self, stack = None):
         removedStackFiles = []
         if stack is None:
-            removedStackFiles += self.__RemoveAllStacks(ignoreInfrastructure=ignoreInfrastructure)
+            removedStackFiles += self.__RemoveAllStacks()
         elif stack in self.__ignoredStacks:
             warnings.warn("Ignoring removal of stack {0}".format(stack))
-        elif stack in self.__infrastructureStacks:
-            if not(ignoreInfrastructure):
-                stackFileMatches = glob.glob(os.path.join(self.__stacksFolder, 'docker-compose.{0}.y*ml'.format(stack)))
-                for stackFile in stackFileMatches:
-                    InfrastructureHandler.RemoveInfrastructure(stackFile)
-                    removedStackFiles.append(stackFile)
         else:
             DockerSwarmTools.RemoveStack(stack)
             stackFileMatches = glob.glob(os.path.join(self.__stacksFolder, 'docker-compose.{0}.y*ml'.format(stack)))
@@ -237,24 +223,16 @@ class StackHandler:
                 os.remove(removedStackFile)
 
 
-    def __RemoveAllStacks(self, ignoreInfrastructure):
+    def __RemoveAllStacks(self):
         removedStackFiles = []
-        infrastructureStackFiles = []
         stackFileMatches = glob.glob(os.path.join(self.__stacksFolder, 'docker-compose.*.y*ml'))
         for stackFile in stackFileMatches:
             stackName = StackTools.ParseStackNameFromComposeFilename(stackFile)
             if stackName in self.__ignoredStacks:
                 warnings.warn("Ignoring removal of stack {0}".format(stackName))
-            elif stackName in self.__infrastructureStacks:
-                infrastructureStackFiles.append(stackFile)
             else:
                 DockerSwarmTools.RemoveStack(stackName)
                 removedStackFiles.append(stackFile)
-
-        if not (ignoreInfrastructure):
-            for infrastructureStackFile in infrastructureStackFiles:
-                InfrastructureHandler.RemoveInfrastructure(infrastructureStackFile)
-                removedStackFiles.append(infrastructureStackFile)
 
         return removedStackFiles
 

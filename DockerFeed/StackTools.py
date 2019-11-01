@@ -7,24 +7,34 @@ from DockerBuildSystem import DockerSwarmTools, DockerImageTools, YamlTools, Doc
 from SwarmManagement import SwarmManager, SwarmTools
 
 
-def InitWithSwarmManager():
-    if not(CheckSwarmManagementYamlFileExists()):
+def InitWithSwarmManager(swmInfrastructureFiles: []):
+    if not(CheckSwarmManagementYamlFileExists(yamlFiles=swmInfrastructureFiles)):
         DockerSwarmTools.StartSwarm()
         return
-    SwarmManager.StartSwarm(arguments=[])
+    arguments = GetSwarmManagementArgumentsWithInfrastructureFiles(swmInfrastructureFiles)
+    SwarmManager.StartSwarm(arguments=arguments)
 
 
-def PruneWithSwarmManager():
-    if not(CheckSwarmManagementYamlFileExists()):
+def PruneWithSwarmManager(swmInfrastructureFiles: []):
+    if not(CheckSwarmManagementYamlFileExists(yamlFiles=swmInfrastructureFiles)):
         return
-    SwarmManager.StopSwarm(arguments=[])
+    arguments = GetSwarmManagementArgumentsWithInfrastructureFiles(swmInfrastructureFiles)
+    SwarmManager.StopSwarm(arguments=arguments)
 
 
-def CheckSwarmManagementYamlFileExists(yamlFiles=SwarmTools.DEFAULT_SWARM_MANAGEMENT_YAML_FILES):
-    for yamlFile in yamlFiles:
+def CheckSwarmManagementYamlFileExists(yamlFiles: [], defaultYamlFiles=SwarmTools.DEFAULT_SWARM_MANAGEMENT_YAML_FILES):
+    allPossibleYamlFiles = yamlFiles + defaultYamlFiles
+    for yamlFile in allPossibleYamlFiles:
         if os.path.isfile(yamlFile):
             return True
     return False
+
+
+def GetSwarmManagementArgumentsWithInfrastructureFiles(swmInfrastructureFiles: []):
+    arguments = []
+    for swmInfrastructureFile in swmInfrastructureFiles:
+        arguments += ['-f', swmInfrastructureFile]
+    return arguments
 
 
 def ParseStackNameFromComposeFilename(stackFile):

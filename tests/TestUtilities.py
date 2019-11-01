@@ -12,27 +12,30 @@ def CreateArtifactStore(mock = False):
 
     mockStore = ArtifactStore(JFROG_USERNAME, JFROG_PASSWORD)
     mockStore.Pull = MagicMock(return_value=None)
-    mockStore.List = MagicMock(return_value=['tests/testStacks/docker-compose.infrastructure_online.yml', \
-                                             'tests/testStacks/docker-compose.nginx_test_online.yml'])
+    mockStore.List = MagicMock(return_value=['tests/testStacks/docker-compose.nginx_test_online.yml'])
     return mockStore
 
-def CreateStackHandler(offline = False,
-                       mockStore = True,
+def CreateStackHandler(offline=False,
+                       mockStore=True,
+                       swmInfrastructureFiles=["tests/testStacks/swarm.management,yml"],
                        stacksFolder="tests/testStacks",
                        verifyImages=False,
                        ignoredStacks = ['nginx_test_ignored']):
     store = CreateArtifactStore(mockStore)
     return StackHandler(store,
+                        swmInfrastructureFiles=swmInfrastructureFiles,
                         offline=offline,
                         stacksFolder=stacksFolder,
                         verifyImages=verifyImages,
                         ignoredStacks=ignoredStacks)
+
 
 def AssertInfrastructureExists(expected = True, network = "infrastructure_test_network"):
     terminalCommand = "docker network ls"
     networkNames = str(subprocess.Popen(terminalCommand, stdout=subprocess.PIPE, shell=True).communicate()[0])
     actual = network in networkNames
     assert(actual == expected)
+
 
 def AssertStacksExists(stackNames: list, expected=True):
     terminalCommand = "docker stack ls"

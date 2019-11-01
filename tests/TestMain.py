@@ -8,7 +8,7 @@ class TestMain(unittest.TestCase):
 
     def test_MainInitDeployPrune(self):
         stacksToIgnoreArgs = ['--ignored-stacks', 'nginx_test_ignored']
-        defaultArgs = ['--storage', 'tests/testStacks', '--user', 'dummy:password', '--offline']
+        defaultArgs = ['--storage', 'tests/testStacks', '--user', 'dummy:password', '--offline', '-i', 'tests/testStacks/swarm.management.yml']
         self.assertTrue(os.path.isdir('tests/testStacks'))
 
         args = ['init'] + defaultArgs + stacksToIgnoreArgs
@@ -29,7 +29,6 @@ class TestMain(unittest.TestCase):
         Main.Main(args)
         TestUtilities.AssertStacksExists(['nginx_test'], False)
         TestUtilities.AssertStacksExists(['nginx_test_ignored'], False)
-        TestUtilities.AssertInfrastructureExists(False)
 
         args = ['ls'] + defaultArgs + stacksToIgnoreArgs
         Main.Main(args)
@@ -47,7 +46,7 @@ class TestMain(unittest.TestCase):
         self.assertRaises(Exception, Main.Main, args)
 
     def test_DeployWithVerifyStacks(self):
-        defaultArgs = ['--storage', 'tests/invalidTestStacks', '--user', 'dummy:password', '--offline']
+        defaultArgs = ['--storage', 'tests/invalidTestStacks', '--user', 'dummy:password', '--offline', '-i', 'tests/invalidTestStacks/swarm.management.yml']
         args = ['init'] + defaultArgs
         Main.Main(args)
         TestUtilities.AssertInfrastructureExists(True)
@@ -61,11 +60,10 @@ class TestMain(unittest.TestCase):
 
         args = ['prune'] + defaultArgs
         Main.Main(args)
-        TestUtilities.AssertInfrastructureExists(False)
 
     def test_RunStacks(self):
         DockerComposeTools.DockerComposeBuild(["tests/testBatchStacks/docker-compose.batch.yml"])
-        defaultArgs = ['--storage', 'tests/testBatchStacks', '--user', 'dummy:password', '--offline']
+        defaultArgs = ['--storage', 'tests/testBatchStacks', '--user', 'dummy:password', '--offline', '-i', 'tests/testBatchStacks/swarm.management.yml']
         self.assertTrue(os.path.isdir('tests/testBatchStacks'))
 
         args = ['init'] + defaultArgs
@@ -84,7 +82,7 @@ class TestMain(unittest.TestCase):
 
 
     def test_DeployStacksWithFile(self):
-        defaultArgs = ['--storage', 'tests/testStacks', '--user', 'dummy:password', '--offline', '-r', 'tests/testStacks/stackList.txt']
+        defaultArgs = ['--storage', 'tests/testStacks', '--user', 'dummy:password', '--offline', '-r', 'tests/testStacks/stackList.txt', '-i', 'tests/testStacks/swarm.management.yml']
         self.assertTrue(os.path.isdir('tests/testStacks'))
         args = ['prune'] + defaultArgs
         Main.Main(args)
@@ -102,30 +100,6 @@ class TestMain(unittest.TestCase):
         Main.Main(args)
         TestUtilities.AssertStacksExists(['nginx_test'], False)
         TestUtilities.AssertStacksExists(['nginx_test_digest'], False)
-        TestUtilities.AssertInfrastructureExists(False)
-
-    def test_DeployStacksWithSwarmManagementFile(self):
-        defaultArgs = ['--storage', './', '--user', 'dummy:password', '--offline']
-        self.assertTrue(os.path.isdir('tests/testStacksWithSwarmManagement'))
-        cwd = os.getcwd()
-        os.chdir('tests/testStacksWithSwarmManagement')
-        try:
-            args = ['prune'] + defaultArgs
-            Main.Main(args)
-
-            args = ['init'] + defaultArgs
-            Main.Main(args)
-            TestUtilities.AssertInfrastructureExists(True, "infrastructure_test_swm_network")
-
-            args = ['deploy'] + defaultArgs
-            Main.Main(args)
-            TestUtilities.AssertStacksExists(['nginx_test'], True)
-
-            args = ['prune'] + defaultArgs
-            Main.Main(args)
-            TestUtilities.AssertStacksExists(['nginx_test'], False)
-        finally:
-            os.chdir(cwd)
 
 
 if __name__ == '__main__':

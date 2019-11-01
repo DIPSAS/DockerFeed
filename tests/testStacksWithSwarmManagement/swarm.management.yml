@@ -1,3 +1,0 @@
-networks:
-  infrastructure_test_swm_network:
-    encrypted: true

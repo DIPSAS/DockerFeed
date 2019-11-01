@@ -3,8 +3,11 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- the topmost header version must be set manually in the VERSION file -->
+## [1.1.0] - 2019-11-01
+- Removed docker-compose.infrastructure.yml feature, with focus on using swarm.management.yml.
+
 ## [1.0.17] - 2019-11-01
-- Added feature to provide a swarm-management.yml file with swarm infrastructure details.
+- Added feature to provide a swarm.management.yml file with swarm infrastructure details.
 
 ## [1.0.16] - 2019-11-01
 - Added feature to provide files with list of stacks to handle.

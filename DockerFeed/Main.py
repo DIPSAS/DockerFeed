@@ -49,7 +49,7 @@ def Main(args = None, stackHandler: StackHandler = None, artifactStore: Artifact
     parser.add_argument("--verify-no-secrets", help="Add --verify-no-secrets to validate that no Swarm secrets are used in stack.", action='store_true')
     parser.add_argument("--verify-no-volumes", help="Add --verify-no-volumes to validate that no Swarm volumes are used in stack.", action='store_true')
     parser.add_argument("--verify-no-ports", help="Add --verify-no-ports to validate that no ports are exposed in stack.", action='store_true')
-    parser.add_argument("-i", "--infrastructure", type=str, nargs='+', help="Specify infrastructure stacks to use. Default is ['infrastructure'].", default=['infrastructure'])
+    parser.add_argument("-i", "--infrastructure", type=str, nargs='+', help="Specify path to swarm.management.yml files for creating the Swarm infrastructure.", default=[])
     args = parser.parse_args(args)
 
     action = args.action[0]
@@ -77,7 +77,7 @@ def Main(args = None, stackHandler: StackHandler = None, artifactStore: Artifact
     verifyNoSecrets = args.verify_no_secrets
     verifyNoVolumes = args.verify_no_volumes
     verifyNoPorts = args.verify_no_ports
-    infrastructureStacks = args.infrastructure
+    swmInfrastructureFiles = args.infrastructure
 
     if len(stackListFiles) > 0:
         if stacks is None:
@@ -109,9 +109,9 @@ def Main(args = None, stackHandler: StackHandler = None, artifactStore: Artifact
     if stackHandler is None:
         stackHandler = StackHandler(artifactStore,
                                     stacksFolder=stacksFolder,
+                                    swmInfrastructureFiles=swmInfrastructureFiles,
                                     logsFolder=logsFolder,
                                     noLogs=noLogs,
-                                    infrastructureStacks=infrastructureStacks,
                                     ignoredStacks=ignoredStacks,
                                     offline=offline,
                                     removeFiles=removeFiles,
