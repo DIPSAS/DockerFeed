@@ -61,15 +61,10 @@ class TestStackHandler(unittest.TestCase):
                                                                  swmInfrastructureFiles=["tests/testBatchStacks/swarm.management,yml"])
         handler.Init()
         os.environ['SHOULD_FAIL'] = 'false'
-        os.environ['SHOULD_FAIL_2'] = 'false'
         self.assertTrue(handler.Run())
 
         os.environ['SHOULD_FAIL'] = 'true'
         self.assertFalse(handler.Run(['batch']))
-
-        os.environ['SHOULD_FAIL'] = 'false'
-        os.environ['SHOULD_FAIL_2'] = 'true'
-        self.assertFalse(handler.Run())
 
 
 
