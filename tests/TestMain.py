@@ -83,5 +83,27 @@ class TestMain(unittest.TestCase):
         self.assertRaises(Exception, Main.Main, args)
 
 
+    def test_DeployStacksWithFile(self):
+        defaultArgs = ['--storage', 'tests/testStacks', '--user', 'dummy:password', '--offline', '-r', 'tests/testStacks/stackList.txt']
+        self.assertTrue(os.path.isdir('tests/testStacks'))
+        args = ['prune'] + defaultArgs
+        Main.Main(args)
+
+        args = ['init'] + defaultArgs
+        Main.Main(args)
+        TestUtilities.AssertInfrastructureExists(True)
+
+        args = ['deploy'] + defaultArgs
+        Main.Main(args)
+        TestUtilities.AssertStacksExists(['nginx_test'], True)
+        TestUtilities.AssertStacksExists(['nginx_test_digest'], False)
+
+        args = ['prune'] + defaultArgs
+        Main.Main(args)
+        TestUtilities.AssertStacksExists(['nginx_test'], False)
+        TestUtilities.AssertStacksExists(['nginx_test_digest'], False)
+        TestUtilities.AssertInfrastructureExists(False)
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 from DockerFeed.StackHandler import StackHandler
 from DockerFeed.ArtifactStore import ArtifactStore
+from DockerFeed import MainTools
 
 DEFAULT_URI = 'https://artifacts/'
 DEFAULT_FEED = 'delivery-dev'
@@ -34,6 +35,7 @@ def Main(args = None, stackHandler: StackHandler = None, artifactStore: Artifact
     parser.add_argument("-s", "--storage", type=str, help="Specify storage folder to use for local storage of compose files.", default=None)
     parser.add_argument("-e", "--env", type=str, nargs='+', help="Add environment variables to expose as <envKey=envValue>. "
                                                                  "A present '.env' file will be handled as an environment file to expose.", default=[])
+    parser.add_argument("-r", "--read", type=str, nargs='+', help="Add files with a list of stacks to handle. Each line in the file should be the stack name to handle.", default=[])
     parser.add_argument("--ignored-stacks", type=str, nargs='+', help="Add a list of stacks to ignore.", default=[])
     parser.add_argument("--uri", type=str, help="Specify jfrog uri. Default is {0}".format(DEFAULT_URI), default=DEFAULT_URI)
     parser.add_argument("--logs-folder", type=str, help="Specify folder for storing log files when executing batch processes with 'run'. Default is './{0}'.".format(DEFAULT_LOGS_FOLDER), default=None)
@@ -55,14 +57,15 @@ def Main(args = None, stackHandler: StackHandler = None, artifactStore: Artifact
     if len(args.action) > 1:
         stacks = args.action[1:]
 
-    username = ParseUsernameAndPassword(args.user)[0]
-    password = ParseUsernameAndPassword(args.user)[1]
+    username = MainTools.ParseUsernameAndPassword(args.user)[0]
+    password = MainTools.ParseUsernameAndPassword(args.user)[1]
     token = args.token
     feed = args.feed
     storage = args.storage
     logsFolder = args.logs_folder
     noLogs = args.no_logs
     envVariables = args.env
+    stackListFiles = args.read
     ignoredStacks = args.ignored_stacks
     uri = args.uri
     offline = args.offline
@@ -76,7 +79,12 @@ def Main(args = None, stackHandler: StackHandler = None, artifactStore: Artifact
     verifyNoPorts = args.verify_no_ports
     infrastructureStacks = args.infrastructure
 
-    ExposeEnvironmentVariables(envVariables)
+    if len(stackListFiles) > 0:
+        if stacks is None:
+            stacks = []
+        stacks += MainTools.ParseStackListFiles(stackListFiles)
+
+    MainTools.ExposeEnvironmentVariables(envVariables)
 
     if os.path.isfile('.env'):
         load_dotenv('.env')
@@ -128,7 +136,7 @@ def HandleAction(action, stacks, feedUri, offline, stacksFolder, stackHandler: S
     elif action == 'rm' or action == 'remove':
         stackHandler.Remove(stacks)
     elif action == 'ls' or action == 'list':
-        PrettyPrintStacks(stackHandler.List(stacks), feedUri, offline, stacksFolder)
+        MainTools.PrettyPrintStacks(stackHandler.List(stacks), feedUri, offline, stacksFolder)
     elif action == 'prune':
         stackHandler.Prune()
     elif action == 'pull':
@@ -146,34 +154,3 @@ def HandleAction(action, stacks, feedUri, offline, stacksFolder, stackHandler: S
             raise Exception("Stacks failed verification! See warnings in log.")
     else:
         warnings.warn("No action provided, please add -help to get help.")
-
-
-def ParseUsernameAndPassword(usernameAndPassword: str):
-    if usernameAndPassword is None:
-        return [None, None]
-    elif not(':' in usernameAndPassword):
-        warnings.warn('Cannot parse username and password {0}. It should be of form <user>:<password>'.format(usernameAndPassword))
-        return [None, None]
-    return usernameAndPassword.split(':')
-
-
-def ExposeEnvironmentVariables(envVariables):
-    for envVariable in envVariables:
-        if not('=' in envVariable):
-            warnings.warn('Cannot parse environment variable {0}. It should be of form <envKey>=<envValue>'.format(envVariable))
-        else:
-            key = envVariable.split('=')[0]
-            value = envVariable.split('=')[1]
-            os.environ[key] = value
-
-
-def PrettyPrintStacks(stacks, feedUrl, offline, stacksFolder):
-    if offline:
-        info = "<--- Stacks in local folder {0} --->\r\n".format(stacksFolder)
-    else:
-        info = "<--- Stacks on feed {0} --->\r\n".format(feedUrl)
-    for stack in stacks:
-        info += stack + '\r\n'
-
-    print(info)
-    return info

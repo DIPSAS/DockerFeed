@@ -67,8 +67,10 @@ Handle the docker feed by adding any of the following commands with zero or more
   - `-f/--feed` to specify the jfrog feed. Default is `delivery-dev`.
   - `-s/--storage` to specify a storage folder to use for local storage of compose files.
   - `-e/--env` with environment variables to expose as `envKey=envValue`:
-    - `dockerf dp -e key1=variable1 key2=variable2`
+    - `dockerf deploy -e key1=variable1 key2=variable2`
     - Alternatively, any present `.env` will be considered as a file with environment variables to expose.
+  - `-r/--read` with a list of files containing stacks to handle, thus each line in the file is the name of a stack to handle.
+    - `dockerf deploy -r stackList.txt stackList2.txt`
   - `--ignored-stacks` followed by a list of stacks to ignore.
   - `--uri` to specify the jfrog uri. Default is `https://artifacts/`.
   - `--logs-folder` to specify folder for storing log files when executing batch processes with 'run'. Default is './logs'.
