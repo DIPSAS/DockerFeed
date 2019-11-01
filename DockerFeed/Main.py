@@ -1,7 +1,6 @@
 import argparse
 import warnings
 import os
-from dotenv import load_dotenv
 from DockerFeed.StackHandler import StackHandler
 from DockerFeed.ArtifactStore import ArtifactStore
 from DockerFeed import MainTools
@@ -84,10 +83,7 @@ def Main(args = None, stackHandler: StackHandler = None, artifactStore: Artifact
             stacks = []
         stacks += MainTools.ParseStackListFiles(stackListFiles)
 
-    MainTools.ExposeEnvironmentVariables(envVariables)
-
-    if os.path.isfile('.env'):
-        load_dotenv('.env')
+    MainTools.ExposeEnvironmentVariables(envVariables, swmInfrastructureFiles)
 
     stacksFolder = storage
     if stacksFolder is None:

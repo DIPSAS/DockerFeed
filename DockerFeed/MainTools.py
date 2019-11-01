@@ -1,5 +1,8 @@
 import warnings
 import os
+from dotenv import load_dotenv
+from DockerFeed import StackTools
+from SwarmManagement import SwarmTools
 
 
 def ParseStackListFiles(stackListFiles: []):
@@ -24,7 +27,7 @@ def ParseUsernameAndPassword(usernameAndPassword: str):
     return usernameAndPassword.split(':')
 
 
-def ExposeEnvironmentVariables(envVariables: []):
+def ExposeEnvironmentVariables(envVariables: [], swmInfrastructureFiles: []):
     for envVariable in envVariables:
         if not('=' in envVariable):
             warnings.warn('Cannot parse environment variable {0}. It should be of form <envKey>=<envValue>'.format(envVariable))
@@ -32,6 +35,13 @@ def ExposeEnvironmentVariables(envVariables: []):
             key = envVariable.split('=')[0]
             value = envVariable.split('=')[1]
             os.environ[key] = value
+
+    if StackTools.CheckSwarmManagementYamlFileExists(yamlFiles=swmInfrastructureFiles):
+        arguments = StackTools.GetSwarmManagementArgumentsWithInfrastructureFiles(swmInfrastructureFiles)
+        SwarmTools.LoadEnvironmentVariables(arguments=arguments)
+
+    if os.path.isfile('.env'):
+        load_dotenv('.env')
 
 
 def PrettyPrintStacks(stacks: [], feedUrl: str, offline: bool, stacksFolder: str):
