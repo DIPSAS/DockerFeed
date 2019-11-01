@@ -104,6 +104,29 @@ class TestMain(unittest.TestCase):
         TestUtilities.AssertStacksExists(['nginx_test_digest'], False)
         TestUtilities.AssertInfrastructureExists(False)
 
+    def test_DeployStacksWithSwarmManagementFile(self):
+        defaultArgs = ['--storage', './', '--user', 'dummy:password', '--offline']
+        self.assertTrue(os.path.isdir('tests/testStacksWithSwarmManagement'))
+        cwd = os.getcwd()
+        os.chdir('tests/testStacksWithSwarmManagement')
+        try:
+            args = ['prune'] + defaultArgs
+            Main.Main(args)
+
+            args = ['init'] + defaultArgs
+            Main.Main(args)
+            TestUtilities.AssertInfrastructureExists(True, "infrastructure_test_swm_network")
+
+            args = ['deploy'] + defaultArgs
+            Main.Main(args)
+            TestUtilities.AssertStacksExists(['nginx_test'], True)
+
+            args = ['prune'] + defaultArgs
+            Main.Main(args)
+            TestUtilities.AssertStacksExists(['nginx_test'], False)
+        finally:
+            os.chdir(cwd)
+
 
 if __name__ == '__main__':
     unittest.main()

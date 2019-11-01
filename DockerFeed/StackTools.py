@@ -1,9 +1,30 @@
-import os
 import warnings
 import random
+import os
 import glob
 from datetime import datetime
-from DockerBuildSystem import DockerImageTools, YamlTools, DockerComposeTools
+from DockerBuildSystem import DockerSwarmTools, DockerImageTools, YamlTools, DockerComposeTools
+from SwarmManagement import SwarmManager, SwarmTools
+
+
+def InitWithSwarmManager():
+    if not(CheckSwarmManagementYamlFileExists()):
+        DockerSwarmTools.StartSwarm()
+        return
+    SwarmManager.StartSwarm(arguments=[])
+
+
+def PruneWithSwarmManager():
+    if not(CheckSwarmManagementYamlFileExists()):
+        return
+    SwarmManager.StopSwarm(arguments=[])
+
+
+def CheckSwarmManagementYamlFileExists(yamlFiles=SwarmTools.DEFAULT_SWARM_MANAGEMENT_YAML_FILES):
+    for yamlFile in yamlFiles:
+        if os.path.isfile(yamlFile):
+            return True
+    return False
 
 
 def ParseStackNameFromComposeFilename(stackFile):

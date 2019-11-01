@@ -74,7 +74,7 @@ class StackHandler:
 
 
     def Init(self):
-        DockerSwarmTools.StartSwarm()
+        StackTools.InitWithSwarmManager()
         for infrastructureStack in self.__infrastructureStacks:
             self.__DeployStack(infrastructureStack, ignoreInfrastructure=False)
 
@@ -108,6 +108,7 @@ class StackHandler:
 
     def Prune(self):
         self.__RemoveStack(ignoreInfrastructure=False)
+        StackTools.PruneWithSwarmManager()
 
 
     def List(self, stackSearches = None):

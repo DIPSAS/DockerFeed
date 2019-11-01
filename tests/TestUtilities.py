@@ -28,10 +28,10 @@ def CreateStackHandler(offline = False,
                         verifyImages=verifyImages,
                         ignoredStacks=ignoredStacks)
 
-def AssertInfrastructureExists(expected = True):
+def AssertInfrastructureExists(expected = True, network = "infrastructure_test_network"):
     terminalCommand = "docker network ls"
     networkNames = str(subprocess.Popen(terminalCommand, stdout=subprocess.PIPE, shell=True).communicate()[0])
-    actual = "infrastructure_test_network" in networkNames
+    actual = network in networkNames
     assert(actual == expected)
 
 def AssertStacksExists(stackNames: list, expected=True):

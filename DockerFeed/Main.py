@@ -89,9 +89,6 @@ def Main(args = None, stackHandler: StackHandler = None, artifactStore: Artifact
     if os.path.isfile('.env'):
         load_dotenv('.env')
 
-    moduleDir = os.path.dirname(os.path.realpath(__file__))
-    load_dotenv(os.path.join(moduleDir, 'default.env'))
-
     stacksFolder = storage
     if stacksFolder is None:
         homePath = os.path.expanduser('~')

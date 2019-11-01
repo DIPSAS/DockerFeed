@@ -19,6 +19,24 @@ networks:
     encrypted: false
 ```
 
+An another option to create the Swarm infrastructure is to define a `swarm.management.yml` file with details about which `configs`, `secrets`, `volumes` or `networks` to create. The `DockerFeed` tool will automatically detect the `swarm.management.yml` file if it exists in the current folder.
+Please have a look at the [SwarmManagement](https://github.com/DIPSAS/SwarmManagement) project to get more details, but following is an example on how the `swarm.management.yml` content could look like:
+
+```yaml
+networks:
+    <network_name>: 
+        encrypted: true
+configs:
+    <config_name>: <config_file>
+secrets:
+    <secret_name>: <secret_file>
+volumes:
+    <volume_name>:
+        driver: local
+env_files:
+    - <environment_file>
+```
+
 ## Install Or Upgrade
 - pip install --upgrade DockerFeed
 
