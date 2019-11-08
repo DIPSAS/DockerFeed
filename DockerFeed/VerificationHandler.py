@@ -1,6 +1,6 @@
-from DockerBuildSystem import DockerImageTools, YamlTools
+from DockerBuildSystem import YamlTools
 import warnings
-
+from DockerFeed.Tools import VerificationTools
 
 DEFAULT_REQUIRED_IMAGE_LABELS = [
     'org.opencontainers.image.created',
@@ -11,92 +11,52 @@ DEFAULT_REQUIRED_IMAGE_LABELS = [
     'org.opencontainers.image.title',
 ]
 
-
-def VerifyComposeFile(composeFile: str,
-                       verifyImageDigest = True,
-                       verifyImages = True,
-                       verifyNoConfigs = True,
-                       verifyNoSecrets = True,
-                       verifyNoVolumes = True,
-                       verifyNoPorts = True,
-                       requiredImageLabels = DEFAULT_REQUIRED_IMAGE_LABELS):
-    yamlData = YamlTools.GetYamlData([composeFile])
-
-    valid = True
-    for service in yamlData.get('services', []):
-        if not ('image' in yamlData['services'][service]):
-            warnings.warn('Missing image in compose file: {0}'.format(composeFile))
-            valid = False
-            continue
-
-        imageName = yamlData['services'][service]['image']
-
-        if verifyImageDigest:
-            valid &= __VerifyImageDigest(composeFile, service, imageName)
-
-        if verifyImages:
-            valid &= __VerifyImage(imageName, requiredImageLabels)
-
-        if verifyNoConfigs:
-            valid &= __VerifyNoConfigs(yamlData, service)
-
-        if verifyNoSecrets:
-            valid &= __VerifyNoSecrets(yamlData, service)
-
-        if verifyNoVolumes:
-            valid &= __VerifyNoVolumes(yamlData, service)
-
-        if verifyNoPorts:
-            valid &= __VerifyNoPorts(yamlData, service)
-
-    return valid
+class VerificationHandler:
+    def __init__(self,
+                 verifyImageDigests=True,
+                 verifyImages=True,
+                 verifyNoConfigs=True,
+                 verifyNoSecrets=True,
+                 verifyNoVolumes=True,
+                 verifyNoPorts=True,
+                 requiredImageLabels=DEFAULT_REQUIRED_IMAGE_LABELS):
+        self.__verifyImageDigests = verifyImageDigests
+        self.__verifyImages = verifyImages
+        self.__verifyNoConfigs = verifyNoConfigs
+        self.__verifyNoSecrets = verifyNoSecrets
+        self.__verifyNoVolumes = verifyNoVolumes
+        self.__verifyNoPorts = verifyNoPorts
+        self.__requiredImageLabels = requiredImageLabels
 
 
-def __VerifyImageDigest(composeFile: str, service: str, imageName: str):
-    if not('@sha256:' in imageName):
-        warnings.warn('Missing image digest on service {0} in compose file {1}'.format(service, composeFile))
-        return False
-    return True
+    def VerifyStackFile(self, stackFile: str):
+        yamlData = YamlTools.GetYamlData([stackFile])
 
+        valid = True
+        for service in yamlData.get('services', []):
+            if not ('image' in yamlData['services'][service]):
+                warnings.warn('Missing image in compose file: {0}'.format(stackFile))
+                valid = False
+                continue
 
-def __VerifyImage(imageName: str, requiredImageLabels: list):
-    DockerImageTools.PullImage(imageName)
-    valid = True
-    for requiredImageLabel in requiredImageLabels:
-        valid &= __VerifyImageLabelExists(imageName, requiredImageLabel)
-    return valid
+            imageName = yamlData['services'][service]['image']
 
+            if self.__verifyImageDigests:
+                valid &= VerificationTools.VerifyImageDigest(stackFile, service, imageName)
 
-def __VerifyImageLabelExists(imageName: str, label: str):
-    if not(DockerImageTools.CheckImageLabelExists(imageName, label)):
-        warnings.warn('Missing label {0} on image {1}'.format(label, imageName))
-        return False
-    return True
+            if self.__verifyImages:
+                valid &= VerificationTools.VerifyImage(imageName, self.__requiredImageLabels)
 
+            if self.__verifyNoConfigs:
+                valid &= VerificationTools.VerifyNoConfigs(yamlData, service)
 
-def __VerifyNoConfigs(yamlData: dict, service: str):
-    if 'configs' in yamlData or 'configs' in yamlData['services'][service]:
-        warnings.warn('Invalid configs detected in service {0}'.format(service))
-        return False
-    return True
+            if self.__verifyNoSecrets:
+                valid &= VerificationTools.VerifyNoSecrets(yamlData, service)
 
+            if self.__verifyNoVolumes:
+                valid &= VerificationTools.VerifyNoVolumes(yamlData, service)
 
-def __VerifyNoSecrets(yamlData: dict, service: str):
-    if 'secrets' in yamlData or 'secrets' in yamlData['services'][service]:
-        warnings.warn('Invalid secrets detected in service {0}'.format(service))
-        return False
-    return True
+            if self.__verifyNoPorts:
+                valid &= VerificationTools.VerifyNoPorts(yamlData, service)
 
-
-def __VerifyNoVolumes(yamlData: dict, service: str):
-    if 'volumes' in yamlData or 'volumes' in yamlData['services'][service]:
-        warnings.warn('Invalid volumes detected in service {0}'.format(service))
-        return False
-    return True
-
-
-def __VerifyNoPorts(yamlData: dict, service: str):
-    if 'ports' in yamlData['services'][service]:
-        warnings.warn('Invalid ports detected in service {0}'.format(service))
-        return False
-    return True
+        return valid

@@ -10,29 +10,29 @@ class TestStackHandler(unittest.TestCase):
         handler: StackHandler = TestUtilities.CreateStackHandler()
         handler.Init()
         TestUtilities.AssertInfrastructureExists(True)
-        handler.Deploy(['nginx_test'], verifyStacksOnDeploy=False)
+        handler.Deploy(['nginx_test'])
         TestUtilities.AssertStacksExists(["nginx_test"], True)
         handler.Remove(['nginx_test'])
         TestUtilities.AssertStacksExists(["nginx_test"], False)
 
     def test_DeployOnlyValidStacks(self):
-        handler: StackHandler = TestUtilities.CreateStackHandler(stacksFolder="tests/invalidTestStacks")
+        handler: StackHandler = TestUtilities.CreateStackHandler(source="tests/invalidTestStacks", verifyStacksOnDeploy=True)
         handler.Init()
         TestUtilities.AssertInfrastructureExists(True)
-        handler.Deploy(['nginx_test_invalid_config'], verifyStacksOnDeploy=True)
+        handler.Deploy(['nginx_test_invalid_config'])
         TestUtilities.AssertStacksExists(["nginx_test_invalid_config"], False)
-        handler.Deploy(['nginx_test_invalid_secret'], verifyStacksOnDeploy=True)
+        handler.Deploy(['nginx_test_invalid_secret'])
         TestUtilities.AssertStacksExists(["nginx_test_invalid_secret"], False)
-        handler.Deploy(['nginx_test_invalid_volume'], verifyStacksOnDeploy=True)
+        handler.Deploy(['nginx_test_invalid_volume'])
         TestUtilities.AssertStacksExists(["nginx_test_invalid_volume"], False)
-        handler.Deploy(['nginx_test_invalid_port'], verifyStacksOnDeploy=True)
+        handler.Deploy(['nginx_test_invalid_port'])
         TestUtilities.AssertStacksExists(["nginx_test_invalid_port"], False)
 
     def test_InitPrune(self):
         handler: StackHandler = TestUtilities.CreateStackHandler()
         handler.Init()
         TestUtilities.AssertInfrastructureExists(True)
-        handler.Deploy(verifyStacksOnDeploy=False)
+        handler.Deploy()
         TestUtilities.AssertStacksExists(['nginx_test'], True)
         handler.Prune()
         TestUtilities.AssertStacksExists(['nginx_test'], False)
@@ -40,15 +40,10 @@ class TestStackHandler(unittest.TestCase):
         self.assertGreater(len(stacks), 0)
         TestUtilities.AssertStacksExists(stacks, False)
 
-    def test_List_offline(self):
-        handler: StackHandler = TestUtilities.CreateStackHandler(offline=True)
+    def test_List(self):
+        handler: StackHandler = TestUtilities.CreateStackHandler()
         stacks = handler.List()
         self.assertTrue('nginx_test' in stacks)
-
-    def test_List_online(self):
-        handler: StackHandler = TestUtilities.CreateStackHandler(offline=False)
-        stacks = handler.List()
-        self.assertTrue('nginx_test_online' in stacks)
 
     def test_Verify(self):
         handler: StackHandler = TestUtilities.CreateStackHandler()
@@ -57,7 +52,7 @@ class TestStackHandler(unittest.TestCase):
 
     def test_Run(self):
         DockerComposeTools.DockerComposeBuild(["tests/testBatchStacks/docker-compose.batch.yml"])
-        handler: StackHandler = TestUtilities.CreateStackHandler(stacksFolder="tests/testBatchStacks",
+        handler: StackHandler = TestUtilities.CreateStackHandler(source="tests/testBatchStacks",
                                                                  swmInfrastructureFiles=["tests/testBatchStacks/swarm.management,yml"])
         handler.Init()
         os.environ['SHOULD_FAIL'] = 'false'

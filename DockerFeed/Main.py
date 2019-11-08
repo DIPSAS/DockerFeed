@@ -1,135 +1,36 @@
-import argparse
 import warnings
-import os
 from DockerFeed.StackHandler import StackHandler
-from DockerFeed.ArtifactStore import ArtifactStore
-from DockerFeed import MainTools
+from DockerFeed import StackHandlerCreator
+from DockerFeed.Tools import MainTools, ArgumentTools
 
-DEFAULT_URI = 'https://artifacts/'
-DEFAULT_FEED = 'delivery-dev'
-PACKAGE_CONSOLE_NAME = 'DockerFeed'
-DEFAULT_CACHE_FOLDER = '.dockerfeed'
-DEFAULT_LOGS_FOLDER = 'logs'
-DEFAULT_STACKS_FOLDER = 'stacks'
 
-def Main(args = None, stackHandler: StackHandler = None, artifactStore: ArtifactStore = None):
-    parser = argparse.ArgumentParser()
-    parser.add_argument("action", type=str, nargs='+',
-                        help="Initialize swarm with 'init', \r\n"
-                             + "deploy stacks with 'deploy', \r\n"
-                             + "remove stacks with 'rm/remove', \r\n"
-                             + "list stacks with 'ls/list', \r\n"
-                             + "prune all stacks with 'prune', \r\n"
-                             + "pull stacks with 'pull', \r\n"
-                             + "push stacks with 'push'. \r\n"
-                             + "run stacks as batch processes with 'run'. \r\n"
-                             + "verify stacks with 'verify'. \r\n"
-                             + "Append stacks to handle following the action. \r\n"
-                             + "If no stacks are provided, then all stacks are deployed/removed. \r\n"
-                             + "Example: '{0} deploy stack1 stack2' \r\n".format(PACKAGE_CONSOLE_NAME))
+def Main(args = None, stackHandler: StackHandler = None):
+    arguments = ArgumentTools.ParseArguments(args)
+    action = arguments.action[0]
+    stackListFilesToRead = arguments.read
 
-    parser.add_argument("-u", "--user", type=str, help="Specify user credentials for jfrog as <user>:<password>.", default=None)
-    parser.add_argument("-t", "--token", type=str, help="Specify token for jfrog.", default=None)
-    parser.add_argument("-f", "--feed", type=str, help="Specify jfrog feed. Default is '{0}'".format(DEFAULT_FEED), default=DEFAULT_FEED)
-    parser.add_argument("-s", "--storage", type=str, help="Specify storage folder to use for local storage of compose files.", default=None)
-    parser.add_argument("-e", "--env", type=str, nargs='+', help="Add environment variables to expose as <envKey=envValue>. "
-                                                                 "A present '.env' file will be handled as an environment file to expose.", default=[])
-    parser.add_argument("-r", "--read", type=str, nargs='+', help="Add files with a list of stacks to handle. Each line in the file should be the stack name to handle.", default=[])
-    parser.add_argument("--ignored-stacks", type=str, nargs='+', help="Add a list of stacks to ignore.", default=[])
-    parser.add_argument("--uri", type=str, help="Specify jfrog uri. Default is {0}".format(DEFAULT_URI), default=DEFAULT_URI)
-    parser.add_argument("--logs-folder", type=str, help="Specify folder for storing log files when executing batch processes with 'run'. Default is './{0}'.".format(DEFAULT_LOGS_FOLDER), default=None)
-    parser.add_argument("--no-logs", help="Add --no-logs to drop storing log files when executing batch processes with 'run'.", action='store_true')
-    parser.add_argument("--offline", help="Add --offline to work offline.", action='store_true')
-    parser.add_argument("--remove-files", help="Add --remove-files to remove files from local storage when removing stacks.", action='store_true')
-    parser.add_argument("--verify-uri", help="Add --verify-uri to verify jfrog uri certificate.", action='store_true')
-    parser.add_argument("--verify-stacks-on-deploy", help="Add --verify-stacks-on-deploy to deploy only valid stacks.", action='store_true')
-    parser.add_argument("--verify-images", help="Add --verify-images to validate required labels on images.", action='store_true')
-    parser.add_argument("--verify-no-configs", help="Add --verify-no-configs to validate that no Swarm configs are used in stack.", action='store_true')
-    parser.add_argument("--verify-no-secrets", help="Add --verify-no-secrets to validate that no Swarm secrets are used in stack.", action='store_true')
-    parser.add_argument("--verify-no-volumes", help="Add --verify-no-volumes to validate that no Swarm volumes are used in stack.", action='store_true')
-    parser.add_argument("--verify-no-ports", help="Add --verify-no-ports to validate that no ports are exposed in stack.", action='store_true')
-    parser.add_argument("-i", "--infrastructure", type=str, nargs='+', help="Specify path to swarm.management.yml files for creating the Swarm infrastructure.", default=[])
-    args = parser.parse_args(args)
+    stacks = []
+    if len(arguments.action) > 1:
+        stacks += arguments.action[1:]
 
-    action = args.action[0]
-    stacks = None
-    if len(args.action) > 1:
-        stacks = args.action[1:]
-
-    username = MainTools.ParseUsernameAndPassword(args.user)[0]
-    password = MainTools.ParseUsernameAndPassword(args.user)[1]
-    token = args.token
-    feed = args.feed
-    storage = args.storage
-    logsFolder = args.logs_folder
-    noLogs = args.no_logs
-    envVariables = args.env
-    stackListFiles = args.read
-    ignoredStacks = args.ignored_stacks
-    uri = args.uri
-    offline = args.offline
-    removeFiles = args.remove_files
-    verifyUri = args.verify_uri
-    verifyStacksOnDeploy = args.verify_stacks_on_deploy
-    verifyImages = args.verify_images
-    verifyNoConfigs = args.verify_no_configs
-    verifyNoSecrets = args.verify_no_secrets
-    verifyNoVolumes = args.verify_no_volumes
-    verifyNoPorts = args.verify_no_ports
-    swmInfrastructureFiles = args.infrastructure
-
-    if len(stackListFiles) > 0:
-        if stacks is None:
-            stacks = []
-        stacks += MainTools.ParseStackListFiles(stackListFiles)
-
-    MainTools.ExposeEnvironmentVariables(envVariables, swmInfrastructureFiles)
-
-    stacksFolder = storage
-    if stacksFolder is None:
-        homePath = os.path.expanduser('~')
-        stacksFolder = os.path.join(homePath, DEFAULT_CACHE_FOLDER, DEFAULT_STACKS_FOLDER)
-
-    if logsFolder is None:
-        logsFolder = os.path.join(os.getcwd(), DEFAULT_LOGS_FOLDER)
-
-    if artifactStore is None:
-        artifactStore = ArtifactStore(
-            username=username,
-            password=password,
-            apiKey=token,
-            feed=feed,
-            uri=uri,
-            verifyCertificate=verifyUri)
+    if len(stackListFilesToRead) > 0:
+        stacks += MainTools.ParseStackListFiles(stackListFilesToRead)
 
     if stackHandler is None:
-        stackHandler = StackHandler(artifactStore,
-                                    stacksFolder=stacksFolder,
-                                    swmInfrastructureFiles=swmInfrastructureFiles,
-                                    logsFolder=logsFolder,
-                                    noLogs=noLogs,
-                                    ignoredStacks=ignoredStacks,
-                                    offline=offline,
-                                    removeFiles=removeFiles,
-                                    verifyImages=verifyImages,
-                                    verifyNoConfigs=verifyNoConfigs,
-                                    verifyNoSecrets=verifyNoSecrets,
-                                    verifyNoVolumes=verifyNoVolumes,
-                                    verifyNoPorts=verifyNoPorts)
+        stackHandler = StackHandlerCreator.CreateStackHandler(arguments)
 
-    feedUri = artifactStore.GetFeedUri()
-    HandleAction(action, stacks, feedUri, offline, stacksFolder, stackHandler, verifyStacksOnDeploy)
+    HandleAction(action, stacks, stackHandler)
 
 
-def HandleAction(action, stacks, feedUri, offline, stacksFolder, stackHandler: StackHandler, verifyStacksOnDeploy):
+def HandleAction(action: str, stacks: list, stackHandler: StackHandler):
     if action == 'init':
         stackHandler.Init()
     elif action == 'deploy':
-        stackHandler.Deploy(stacks, verifyStacksOnDeploy=verifyStacksOnDeploy)
+        stackHandler.Deploy(stacks)
     elif action == 'rm' or action == 'remove':
         stackHandler.Remove(stacks)
     elif action == 'ls' or action == 'list':
-        MainTools.PrettyPrintStacks(stackHandler.List(stacks), feedUri, offline, stacksFolder)
+        MainTools.PrettyPrintStacks(stackHandler.List(stacks), stackHandler.GetSource())
     elif action == 'prune':
         stackHandler.Prune()
     elif action == 'pull':

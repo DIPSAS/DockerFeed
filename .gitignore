@@ -19,3 +19,6 @@ venv/
 output/
 logs/
 ArenaDeliveryDockerStandalone/
+tests/tempFolderStore/
+tests/cacheFolder/
+tests/tests/

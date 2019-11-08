@@ -2,17 +2,17 @@ import os
 import getpass
 from artifactory import ArtifactoryPath
 import requests.packages.urllib3 as urllib3
+from DockerFeed.Stores.AbstractStore import AbstractStore
 
-class ArtifactStore:
+class JfrogStore(AbstractStore):
     def __init__(self, \
                  username = None, \
                  password = None, \
                  apiKey = None,
-                 feed = 'delivery-dev', \
-                 uri = 'https://artifacts/', \
+                 uri = 'https://artifacts/delivery-dev', \
                  verifyCertificate = False):
 
-        self.__uri = uri + '/' + feed
+        self.__uri = uri
         self.__username = username
         self.__password = password
         self.__apiKey = apiKey
@@ -22,15 +22,7 @@ class ArtifactStore:
             urllib3.disable_warnings()
 
 
-    def RequestCredentials(self):
-        if self.__apiKey is None and self.__username is None:
-            self.__RequestUsername()
-
-        if self.__apiKey is None and self.__password is None:
-            self.__RequestPassword()
-
-
-    def GetFeedUri(self):
+    def GetSource(self):
         return self.__uri
 
 
@@ -75,15 +67,16 @@ class ArtifactStore:
             uri += '/' + path
 
         if self.__apiKey is None:
+            self.__RequestCredentials()
             path = ArtifactoryPath(uri, auth=(self.__username, self.__password), verify=self.__verifyCertificate)
         else:
             path = ArtifactoryPath(uri, apikey=self.__apiKey, verify=self.__verifyCertificate)
         return path
 
 
-    def __RequestUsername(self):
-        self.__username = input('Username: ')
+    def __RequestCredentials(self):
+        if self.__apiKey is None and self.__username is None:
+            self.__username = input('Username: ')
 
-
-    def __RequestPassword(self):
-        self.__password = getpass.getpass()
+        if self.__apiKey is None and self.__password is None:
+            self.__password = getpass.getpass()

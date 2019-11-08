@@ -1,33 +1,25 @@
-from DockerFeed.ArtifactStore import ArtifactStore
+from DockerFeed.Stores.FolderStore import FolderStore
 from DockerFeed.StackHandler import StackHandler
+from DockerFeed.VerificationHandler import VerificationHandler
 import subprocess
-from unittest.mock import MagicMock
+import shutil
 
-JFROG_USERNAME = '<replace_me>'
-JFROG_PASSWORD = '<replace_me>'
 
-def CreateArtifactStore(mock = False):
-    if not(mock):
-        return ArtifactStore(JFROG_USERNAME, JFROG_PASSWORD)
+def CreateStackHandler(swmInfrastructureFiles=["tests/testStacks/swarm.management,yml"],
+                       source="tests/testStacks",
+                       ignoredStacks = ['nginx_test_ignored'],
+                       verifyStacksOnDeploy=False):
 
-    mockStore = ArtifactStore(JFROG_USERNAME, JFROG_PASSWORD)
-    mockStore.Pull = MagicMock(return_value=None)
-    mockStore.List = MagicMock(return_value=['tests/testStacks/docker-compose.nginx_test_online.yml'])
-    return mockStore
-
-def CreateStackHandler(offline=False,
-                       mockStore=True,
-                       swmInfrastructureFiles=["tests/testStacks/swarm.management,yml"],
-                       stacksFolder="tests/testStacks",
-                       verifyImages=False,
-                       ignoredStacks = ['nginx_test_ignored']):
-    store = CreateArtifactStore(mockStore)
+    store = FolderStore(sourceFolder=source)
+    verificationHandler = VerificationHandler(verifyImages=False)
+    cacheFolder = 'tests/cacheFolder'
+    shutil.rmtree(cacheFolder, ignore_errors=True)
     return StackHandler(store,
+                        verificationHandler,
                         swmInfrastructureFiles=swmInfrastructureFiles,
-                        offline=offline,
-                        stacksFolder=stacksFolder,
-                        verifyImages=verifyImages,
-                        ignoredStacks=ignoredStacks)
+                        cacheFolder=cacheFolder,
+                        ignoredStacks=ignoredStacks,
+                        verifyStacksOnDeploy=verifyStacksOnDeploy)
 
 
 def AssertInfrastructureExists(expected = True, network = "infrastructure_test_network"):

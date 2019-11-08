@@ -1,0 +1,2 @@
+nginx_test>=1.2.0
+nginx_test_digest==1.0.1

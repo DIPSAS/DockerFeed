@@ -1,5 +1,6 @@
 import unittest
 import os
+import shutil
 from tests import TestUtilities
 from DockerBuildSystem import DockerComposeTools
 from DockerFeed import Main
@@ -7,8 +8,11 @@ from DockerFeed import Main
 class TestMain(unittest.TestCase):
 
     def test_MainInitDeployPrune(self):
+        cacheFolder = 'tests/cacheFolder'
+        shutil.rmtree(cacheFolder, ignore_errors=True)
+
         stacksToIgnoreArgs = ['--ignored-stacks', 'nginx_test_ignored']
-        defaultArgs = ['--storage', 'tests/testStacks', '--user', 'dummy:password', '--offline', '-i', 'tests/testStacks/swarm.management.yml']
+        defaultArgs = ['--cache', cacheFolder, '--source', 'tests/testStacks', '--user', 'dummy:password', '-i', 'tests/testStacks/swarm.management.yml']
         self.assertTrue(os.path.isdir('tests/testStacks'))
 
         args = ['init'] + defaultArgs + stacksToIgnoreArgs
@@ -33,6 +37,14 @@ class TestMain(unittest.TestCase):
         args = ['ls'] + defaultArgs + stacksToIgnoreArgs
         Main.Main(args)
 
+    def test_Verify(self):
+        cacheFolder = 'tests/cacheFolder'
+        shutil.rmtree(cacheFolder, ignore_errors=True)
+
+        stacksToIgnoreArgs = ['--ignored-stacks', 'nginx_test_ignored']
+        defaultArgs = ['--cache', cacheFolder, '--source', 'tests/testStacks', '--user', 'dummy:password', '-i', 'tests/testStacks/swarm.management.yml']
+        self.assertTrue(os.path.isdir('tests/testStacks'))
+
         args = ['verify', 'nginx_test_digest'] + defaultArgs
         Main.Main(args)
 
@@ -42,11 +54,14 @@ class TestMain(unittest.TestCase):
         args = ['verify', 'nginx_test_digest', '--verify-images'] + defaultArgs
         self.assertRaises(Exception, Main.Main, args)
 
-        args = ['verify'] + defaultArgs
+        args = ['verify', '--verify-image-digests'] + defaultArgs
         self.assertRaises(Exception, Main.Main, args)
 
     def test_DeployWithVerifyStacks(self):
-        defaultArgs = ['--storage', 'tests/invalidTestStacks', '--user', 'dummy:password', '--offline', '-i', 'tests/invalidTestStacks/swarm.management.yml']
+        cacheFolder = 'tests/cacheFolder'
+        shutil.rmtree(cacheFolder, ignore_errors=True)
+
+        defaultArgs = ['--cache', cacheFolder, '--source', 'tests/invalidTestStacks', '--user', 'dummy:password', '-i', 'tests/invalidTestStacks/swarm.management.yml']
         args = ['init'] + defaultArgs
         Main.Main(args)
         TestUtilities.AssertInfrastructureExists(True)
@@ -62,8 +77,11 @@ class TestMain(unittest.TestCase):
         Main.Main(args)
 
     def test_RunStacks(self):
+        cacheFolder = 'tests/cacheFolder'
+        shutil.rmtree(cacheFolder, ignore_errors=True)
+
         DockerComposeTools.DockerComposeBuild(["tests/testBatchStacks/docker-compose.batch.yml"])
-        defaultArgs = ['--storage', 'tests/testBatchStacks', '--user', 'dummy:password', '--offline', '-i', 'tests/testBatchStacks/swarm.management.yml']
+        defaultArgs = ['--cache', cacheFolder, '--source', 'tests/testBatchStacks', '--user', 'dummy:password', '-i', 'tests/testBatchStacks/swarm.management.yml']
         self.assertTrue(os.path.isdir('tests/testBatchStacks'))
 
         args = ['init'] + defaultArgs
@@ -82,7 +100,10 @@ class TestMain(unittest.TestCase):
 
 
     def test_DeployStacksWithFile(self):
-        defaultArgs = ['--storage', 'tests/testStacks', '--user', 'dummy:password', '--offline', '-r', 'tests/testStacks/stackList.txt', '-i', 'tests/testStacks/swarm.management.yml']
+        cacheFolder = 'tests/cacheFolder'
+        shutil.rmtree(cacheFolder, ignore_errors=True)
+
+        defaultArgs = ['--cache', cacheFolder, '--source', 'tests/testStacks', '--user', 'dummy:password', '-r', 'tests/testStacks/stackList.txt', '-i', 'tests/testStacks/swarm.management.yml']
         self.assertTrue(os.path.isdir('tests/testStacks'))
         args = ['prune'] + defaultArgs
         Main.Main(args)
