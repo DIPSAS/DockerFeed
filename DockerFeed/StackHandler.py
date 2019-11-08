@@ -61,7 +61,7 @@ class StackHandler:
     def Deploy(self, stacks = []):
         stackFiles = self.__GetStackFilesFromCache(stacks)
         for stackFile in stackFiles:
-            stackName = StackTools.ParseStackNameFromFilename(stackFile)
+            stackName = StackTools.GetStackNameFromStackFile(stackFile)
 
             valid = True
             if self.__verifyStacksOnDeploy:
@@ -77,7 +77,7 @@ class StackHandler:
         stackFiles = self.__GetStackFilesFromCache(stacks)
         stackFilesToRemove = []
         for stackFile in stackFiles:
-            stackName = StackTools.ParseStackNameFromFilename(stackFile)
+            stackName = StackTools.GetStackNameFromStackFile(stackFile)
             DockerSwarmTools.RemoveStack(stackName)
             stackFilesToRemove.append(stackFile)
 
@@ -114,7 +114,7 @@ class StackHandler:
         if updateCacheFromStore:
             stackFiles = self.__GetStackFilesFromStore(stacks)
             self.__PullStacks(stackFiles, self.__cacheFolder)
-        stackFiles = StackTools.GetStackFilesFromCache(self.__cacheFolder, stacks)
+        stackFiles = StackTools.GetStackFilesInCache(self.__cacheFolder, stacks)
         return StackTools.RemoveIgnoredStacksFromList(stackFiles, self.__ignoredStacks)
 
 
@@ -126,7 +126,7 @@ class StackHandler:
     def __PullStacks(self, stackFiles: list, outputFolder: str, showIgnoredStackWarning = False):
         os.makedirs(outputFolder, exist_ok=True)
         for stackFile in stackFiles:
-            stack = StackTools.ParseStackNameFromFilename(stackFile)
+            stack = StackTools.GetStackNameFromStackFile(stackFile)
             if not(stack in self.__ignoredStacks):
                 self.__abstractStore.Pull(stackFile, outputFolder)
             elif showIgnoredStackWarning:
@@ -136,7 +136,7 @@ class StackHandler:
     def __FilterStackList(self, stackFiles: list, stackSearches: list):
         stacks = []
         for stackFile in stackFiles:
-            stackName = StackTools.ParseStackNameFromFilename(stackFile)
+            stackName = StackTools.GetStackNameFromStackFile(stackFile)
             if len(stackSearches) == 0:
                 stacks.append(stackName)
             else:
