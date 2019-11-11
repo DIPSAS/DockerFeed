@@ -1,1 +1,1 @@
-nginx_test
+nginx_test>=1.0.0

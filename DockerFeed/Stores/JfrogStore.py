@@ -52,10 +52,10 @@ class JfrogStore(AbstractStore):
                 path.unlink()
 
 
-    def List(self):
+    def List(self, searchPattern = '*'):
         artifacts = []
         with self.__CreateArtifactoryPath() as path:
-            for artifact in path:
+            for artifact in path.glob(searchPattern):
                 artifacts.append(str(artifact))
 
         return artifacts
@@ -75,8 +75,8 @@ class JfrogStore(AbstractStore):
 
 
     def __RequestCredentials(self):
-        if self.__apiKey is None and self.__username is None:
+        if self.__username is None:
             self.__username = input('Username: ')
 
-        if self.__apiKey is None and self.__password is None:
+        if self.__password is None:
             self.__password = getpass.getpass()

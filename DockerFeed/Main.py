@@ -16,6 +16,8 @@ def Main(args = None, stackHandler: StackHandler = None):
     if len(stackListFilesToRead) > 0:
         stacks += MainTools.ParseStackListFiles(stackListFilesToRead)
 
+    AssertStacksProvided(action, stacks)
+
     if stackHandler is None:
         stackHandler = StackHandlerCreator.CreateStackHandler(arguments)
 
@@ -36,10 +38,7 @@ def HandleAction(action: str, stacks: list, stackHandler: StackHandler):
     elif action == 'pull':
         stackHandler.Pull(stacks)
     elif action == 'push':
-        if stacks is None:
-            warnings.warn('Please provide stacks to push.')
-        else:
-            stackHandler.Push(stacks)
+        stackHandler.Push(stacks)
     elif action == 'run':
         if not(stackHandler.Run(stacks)):
             raise Exception("Some stacks failed execution! See warnings in log.")
@@ -48,3 +47,16 @@ def HandleAction(action: str, stacks: list, stackHandler: StackHandler):
             raise Exception("Stacks failed verification! See warnings in log.")
     else:
         warnings.warn("No action provided, please add -help to get help.")
+
+
+def AssertStacksProvided(action: str, stacks: list):
+    if action == 'init' or action == 'prune' or \
+            action == 'ls' or action == 'list':
+        return
+
+    if len(stacks) == 0:
+        warnings.warn("Please provide stacks to handle. \r\n"
+                      "Example: \r\n"
+                      "-> dockerf deploy stack1 stack2>=1.2.3 \r\n"
+                      "-> dockerf deploy -r stackList.txt")
+        exit(1)

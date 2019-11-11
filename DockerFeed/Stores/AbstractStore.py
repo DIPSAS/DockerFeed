@@ -23,5 +23,5 @@ class AbstractStore(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def List(self):
+    def List(self, searchPattern = '*'):
         pass

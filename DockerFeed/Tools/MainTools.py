@@ -9,8 +9,10 @@ def ParseStackListFiles(stackListFiles: []):
                 line = line\
                     .replace('\r', '')\
                     .replace('\n', '')\
+                    .replace('\t', '')\
                     .replace(' ', '')
-                stacks.append(line)
+                if not(line == ''):
+                    stacks.append(line)
     return stacks
 
 
