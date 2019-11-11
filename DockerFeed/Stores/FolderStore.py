@@ -40,8 +40,8 @@ class FolderStore(AbstractStore):
         os.remove(sourcePath)
 
 
-    def List(self):
-        return glob.glob(os.path.join(self.__sourceFolder, '*'))
+    def List(self, searchPattern = '*'):
+        return glob.glob(os.path.join(self.__sourceFolder, searchPattern))
 
 
     def __GetArtifactSourcePath(self, artifactName):

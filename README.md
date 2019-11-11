@@ -47,7 +47,7 @@ Handle the docker feed by adding any of the following commands with zero or more
     - Example: `dockerf remove first-stack second-stack`
 - `ls/list` - List stacks on feed.
     - Hint, add search criterias following `ls`, such as:
-    - `dockerf ls first-stack second-stack`
+    - `dockerf ls first-stack second-stack>=1.0.0`
 - `prune` - Remove all stacks.
 - `pull` - Pull stacks from feed.
 - `push` - Push docker-compose files to feed.

@@ -2,12 +2,12 @@ import warnings
 import random
 import os
 from datetime import datetime
-from DockerFeed.Tools import StackTools
+from DockerFeed.Tools import StackVersionTools
 from DockerBuildSystem import DockerImageTools, YamlTools, DockerComposeTools
 
 
 def ExecuteStackAsProcess(stackFile: str, stacksFolder: str, noLogs: bool, logsFolder: str):
-    stackName = StackTools.GetStackNameFromStackFile(stackFile)
+    stackName = StackVersionTools.GetStackNameFromStackFile(stackFile)
     temporaryStackFile = __GenerateStackFileWithContainerNames(stackFile, stacksFolder)
     try:
         DockerComposeTools.DockerComposeUp([temporaryStackFile])
@@ -25,7 +25,7 @@ def ExecuteStackAsProcess(stackFile: str, stacksFolder: str, noLogs: bool, logsF
 
 def __GenerateStackFileWithContainerNames(stackFile: str, stacksFolder: str):
     yamlData: dict = YamlTools.GetYamlData([stackFile])
-    stackName = StackTools.GetStackNameFromStackFile(stackFile)
+    stackName = StackVersionTools.GetStackNameFromStackFile(stackFile)
 
     random.seed()
     randomId = random.randint(0, 1000)

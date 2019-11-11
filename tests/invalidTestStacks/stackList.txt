@@ -1,0 +1,5 @@
+nginx_test_invalid_config
+nginx_test_invalid_port
+nginx_test_invalid_secret
+nginx_test_invalid_volume
+

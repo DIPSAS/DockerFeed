@@ -10,15 +10,15 @@ class TestJfrogStore(unittest.TestCase):
 
     def test_1_Push(self):
         store = JfrogStore(JFROG_USERNAME, JFROG_PASSWORD, uri=JFROG_URI)
-        store.Push('tests/testStacks/docker-compose.nginx_test.yml')
+        store.Push('tests/testStacks/docker-compose.nginx_test.1.0.0.yml')
 
     def test_2_Pull(self):
         store = JfrogStore(JFROG_USERNAME, JFROG_PASSWORD, uri=JFROG_URI)
-        store.Pull('docker-compose.nginx_test.yml', 'tests/testStacks')
+        store.Pull('docker-compose.nginx_test.1.0.0.yml', 'tests/testStacks')
 
     def test_3_Exists(self):
         store = JfrogStore(JFROG_USERNAME, JFROG_PASSWORD, uri=JFROG_URI)
-        self.assertTrue(store.Exists('docker-compose.nginx_test.yml'))
+        self.assertTrue(store.Exists('docker-compose.nginx_test.1.0.0.yml'))
 
     def test_4_PushInvalidInput(self):
         store = JfrogStore(JFROG_USERNAME, JFROG_PASSWORD, uri=JFROG_URI)

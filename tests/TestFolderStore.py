@@ -8,15 +8,15 @@ class TestFolderStore(unittest.TestCase):
 
     def test_1_Push(self):
         store = FolderStore(TEST_FOLDER_STORE)
-        store.Push('tests/testStacks/docker-compose.nginx_test.yml')
+        store.Push('tests/testStacks/docker-compose.nginx_test.1.0.0.yml')
 
     def test_2_Pull(self):
         store = FolderStore(TEST_FOLDER_STORE)
-        store.Pull('docker-compose.nginx_test.yml', 'tests/testStacks')
+        store.Pull('docker-compose.nginx_test.1.0.0.yml', 'tests/testStacks')
 
     def test_3_Exists(self):
         store = FolderStore(TEST_FOLDER_STORE)
-        self.assertTrue(store.Exists('docker-compose.nginx_test.yml'))
+        self.assertTrue(store.Exists('docker-compose.nginx_test.1.0.0.yml'))
 
     def test_4_PushInvalidInput(self):
         store = FolderStore(TEST_FOLDER_STORE)
@@ -30,9 +30,9 @@ class TestFolderStore(unittest.TestCase):
 
     def test_6_Remove(self):
         store = FolderStore(TEST_FOLDER_STORE)
-        self.assertTrue(store.Exists('docker-compose.nginx_test.yml'))
-        store.Remove('docker-compose.nginx_test.yml')
-        self.assertFalse(store.Exists('docker-compose.nginx_test.yml'))
+        self.assertTrue(store.Exists('docker-compose.nginx_test.1.0.0.yml'))
+        store.Remove('docker-compose.nginx_test.1.0.0.yml')
+        self.assertFalse(store.Exists('docker-compose.nginx_test.1.0.0.yml'))
         shutil.rmtree(TEST_FOLDER_STORE)
 
 

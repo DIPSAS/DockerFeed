@@ -1,3 +1,0 @@
-networks:
-  infrastructure_test_network:
-    encrypted: true

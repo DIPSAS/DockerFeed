@@ -1,6 +1,6 @@
 from DockerFeed.Stores.AbstractStore import AbstractStore
 from DockerFeed.VerificationHandler import VerificationHandler
-from DockerFeed.Tools import StackTools, BatchProcessTools, SwarmInitTools
+from DockerFeed.Tools import StackTools, StackVersionTools, BatchProcessTools, SwarmInitTools
 from DockerBuildSystem import DockerSwarmTools
 import os
 import warnings
@@ -61,7 +61,7 @@ class StackHandler:
     def Deploy(self, stacks = []):
         stackFiles = self.__GetStackFilesFromCache(stacks)
         for stackFile in stackFiles:
-            stackName = StackTools.GetStackNameFromStackFile(stackFile)
+            stackName = StackVersionTools.GetStackNameFromStackFile(stackFile)
 
             valid = True
             if self.__verifyStacksOnDeploy:
@@ -77,7 +77,7 @@ class StackHandler:
         stackFiles = self.__GetStackFilesFromCache(stacks)
         stackFilesToRemove = []
         for stackFile in stackFiles:
-            stackName = StackTools.GetStackNameFromStackFile(stackFile)
+            stackName = StackVersionTools.GetStackNameFromStackFile(stackFile)
             DockerSwarmTools.RemoveStack(stackName)
             stackFilesToRemove.append(stackFile)
 
@@ -93,7 +93,7 @@ class StackHandler:
 
     def List(self, stackSearches = []):
         stackFiles = self.__GetStackFilesFromStore()
-        return self.__FilterStackList(stackFiles, stackSearches)
+        return StackTools.GetStackDescriptionList(stackFiles, stackSearches)
 
 
     def Verify(self, stacks = []):
@@ -119,30 +119,30 @@ class StackHandler:
 
 
     def __GetStackFilesFromStore(self, stacks = []):
-        stackFiles = self.__abstractStore.List()
-        return StackTools.GetStackFileBaseNames(stackFiles, stacks)
+        stackFiles = []
+
+        for stack in stacks:
+            spec = StackVersionTools.GetVersionSpecification(stack)
+            searchPattern = 'docker-compose.{0}.*.y*ml'.format(spec.name)
+            stackFiles += self.__abstractStore.List(searchPattern)
+
+        if len(stacks) == 0:
+            searchPattern = 'docker-compose.*.y*ml'.format()
+            stackFiles += self.__abstractStore.List(searchPattern)
+
+        stackFileArtifactNames = []
+        for stackFile in stackFiles:
+            stackFileArtifactName = os.path.basename(stackFile)
+            if 'docker-compose.' in stackFileArtifactName:
+                stackFileArtifactNames.append(stackFileArtifactName)
+        return StackVersionTools.GetResolvedStackFileVersions(stackFileArtifactNames, stacks)
 
 
     def __PullStacks(self, stackFiles: list, outputFolder: str, showIgnoredStackWarning = False):
         os.makedirs(outputFolder, exist_ok=True)
         for stackFile in stackFiles:
-            stack = StackTools.GetStackNameFromStackFile(stackFile)
+            stack = StackVersionTools.GetStackNameFromStackFile(stackFile)
             if not(stack in self.__ignoredStacks):
                 self.__abstractStore.Pull(stackFile, outputFolder)
             elif showIgnoredStackWarning:
                 warnings.warn("Ignoring pull of stack {0}".format(stack))
-
-
-    def __FilterStackList(self, stackFiles: list, stackSearches: list):
-        stacks = []
-        for stackFile in stackFiles:
-            stackName = StackTools.GetStackNameFromStackFile(stackFile)
-            if len(stackSearches) == 0:
-                stacks.append(stackName)
-            else:
-                for stackSearch in stackSearches:
-                    if stackSearch in stackName:
-                        stacks.append(stackName)
-                        break
-
-        return stacks

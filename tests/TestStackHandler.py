@@ -15,6 +15,14 @@ class TestStackHandler(unittest.TestCase):
         handler.Remove(['nginx_test'])
         TestUtilities.AssertStacksExists(["nginx_test"], False)
 
+        handler.Deploy(['nginx_test>=1.1.0'])
+        TestUtilities.AssertStacksExists(["nginx_test"], True)
+        handler.Remove(['nginx_test'])
+        TestUtilities.AssertStacksExists(["nginx_test"], False)
+
+        self.assertRaises(Exception, handler.Deploy, ['nginx_test>=2.1.0'])
+        self.assertRaises(Exception, handler.Deploy, ['non_existent_nginx_test>=2.1.0'])
+
     def test_DeployOnlyValidStacks(self):
         handler: StackHandler = TestUtilities.CreateStackHandler(source="tests/invalidTestStacks", verifyStacksOnDeploy=True)
         handler.Init()
@@ -43,15 +51,24 @@ class TestStackHandler(unittest.TestCase):
     def test_List(self):
         handler: StackHandler = TestUtilities.CreateStackHandler()
         stacks = handler.List()
-        self.assertTrue('nginx_test' in stacks)
+        self.assertFalse('nginx_test==1.0.0' in stacks)
+        self.assertFalse('nginx_test==1.1.0' in stacks)
+        self.assertTrue('nginx_test==1.1.1' in stacks)
+        self.assertTrue('nginx_test_digest==1.1.0' in stacks)
+
+        stacks = handler.List(['nginx>1.0.0'])
+        self.assertFalse('nginx_test==1.0.0' in stacks)
+        self.assertFalse('nginx_test==1.1.0' in stacks)
+        self.assertTrue('nginx_test==1.1.1' in stacks)
+        self.assertFalse('nginx_test_digest==1.1.0' in stacks)
 
     def test_Verify(self):
         handler: StackHandler = TestUtilities.CreateStackHandler()
         self.assertFalse(handler.Verify())
-        self.assertTrue(handler.Verify(['ngint_test_digest']))
+        self.assertTrue(handler.Verify(['nginx_test_digest']))
 
     def test_Run(self):
-        DockerComposeTools.DockerComposeBuild(["tests/testBatchStacks/docker-compose.batch.yml"])
+        DockerComposeTools.DockerComposeBuild(["tests/testBatchStacks/docker-compose.batch.1.0.0.yml"])
         handler: StackHandler = TestUtilities.CreateStackHandler(source="tests/testBatchStacks",
                                                                  swmInfrastructureFiles=["tests/testBatchStacks/swarm.management,yml"])
         handler.Init()
@@ -59,7 +76,7 @@ class TestStackHandler(unittest.TestCase):
         self.assertTrue(handler.Run())
 
         os.environ['SHOULD_FAIL'] = 'true'
-        self.assertFalse(handler.Run(['batch']))
+        self.assertFalse(handler.Run(['batch==1.0.0']))
 
 
 
