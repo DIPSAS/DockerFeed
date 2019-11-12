@@ -4,6 +4,10 @@ configs:
 secrets:
   some_secret.pem_${SECRETS_ID}: secrets/some_secret.pem
 
+volumes:
+  some_volume:
+    driver: local
+
 networks:
   gateway:
     encrypted: true
