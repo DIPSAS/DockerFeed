@@ -4,6 +4,7 @@ from DockerFeed.Tools import StackTools, StackVersionTools, BatchProcessTools, S
 from DockerBuildSystem import DockerSwarmTools
 import os
 import warnings
+import glob
 
 class StackHandler:
     def __init__(self,
@@ -32,10 +33,14 @@ class StackHandler:
         return self.__abstractStore.GetSource()
 
 
-    def Push(self, stackFiles: list):
-        for stackFile in stackFiles:
-            self.__abstractStore.Push(stackFile)
-            print('Pushed {0} to source {1}'.format(stackFile, self.__abstractStore.GetSource()))
+    def Push(self, stackFilePatterns: list):
+        for stackFilePattern in stackFilePatterns:
+            stackFiles = glob.glob(stackFilePattern)
+            if len(stackFiles) == 0:
+                warnings.warn("Could not detect any stack files to push with file pattern: {0}".format(stackFilePattern))
+            for stackFile in stackFiles:
+                self.__abstractStore.Push(stackFile)
+                print('Pushed {0} to source {1}'.format(stackFile, self.__abstractStore.GetSource()))
 
 
     def Pull(self, stacks = [], outputFolder = 'stacks'):
