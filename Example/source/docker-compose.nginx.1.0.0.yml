@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  nginx:
+    image: nginx@sha256:aeded0f2a861747f43a01cf1018cf9efe2bdd02afd57d2b11fcc7fcadc16ccd1
+    hostname: nginx
+    networks:
+      - infrastructure
+      - gateway
+
+networks:
+  infrastructure:
+    external: true
+  gateway:
+    external: true

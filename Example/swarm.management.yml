@@ -1,0 +1,14 @@
+configs:
+  some_config.conf_${CONFIGS_ID}: configs/some_config.conf
+
+secrets:
+  some_secret.pem_${SECRETS_ID}: secrets/some_secret.pem
+
+networks:
+  gateway:
+    encrypted: true
+  infrastructure:
+    encrypted: true
+
+env_files:
+    - swarm.env

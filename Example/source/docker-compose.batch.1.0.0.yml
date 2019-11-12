@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  batch:
+    image: hello-world
+    networks:
+      - infrastructure
+      - gateway
+
+networks:
+  infrastructure:
+    external: true
+  gateway:
+    external: true
