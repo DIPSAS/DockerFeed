@@ -36,13 +36,14 @@ def CreateStackHandler(arguments, abstractStore = None, verificationHandler = No
 
 
 def __CreateStore(arguments):
-    username = MainTools.ParseUsernameAndPassword(arguments.user)[0]
-    password = MainTools.ParseUsernameAndPassword(arguments.user)[1]
-    token = arguments.token
-    source = arguments.source
-    verifyUri = arguments.verify_uri
+    username: str = MainTools.ParseUsernameAndPassword(arguments.user)[0]
+    password: str = MainTools.ParseUsernameAndPassword(arguments.user)[1]
+    token: str = arguments.token
+    source: str = arguments.source
+    verifyUri: bool = arguments.verify_uri
 
-    if validators.url(source) or validators.domain(source):
+    if validators.url(source) or validators.domain(source) \
+            or source.startswith('http:') or source.startswith('https:'):
         return JfrogStore(
             username=username,
             password=password,

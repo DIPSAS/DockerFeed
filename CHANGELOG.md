@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- the topmost header version must be set manually in the VERSION file -->
+## [1.2.2] - 2019-11-12
+- Fixed bug with source identification.
+
 ## [1.2.1] - 2019-11-12
 - Improved push feature with file search pattern.
 
