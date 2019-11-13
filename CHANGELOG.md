@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- the topmost header version must be set manually in the VERSION file -->
+## [1.2.5] - 2019-11-13
+- Minor bug with setting output folder with pull feature.
+
 ## [1.2.4] - 2019-11-13
 - Improved pull information.
 

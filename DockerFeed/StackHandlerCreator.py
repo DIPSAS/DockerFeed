@@ -12,6 +12,7 @@ def CreateStackHandler(arguments, abstractStore = None, verificationHandler = No
     envVariables = arguments.env
     ignoredStacks = arguments.ignored_stacks
     logsFolder = arguments.logs_folder
+    outputFolder = arguments.output_folder
     noLogs = arguments.no_logs
     swmInfrastructureFiles = arguments.infrastructure
     cacheFolder = arguments.cache
@@ -31,6 +32,7 @@ def CreateStackHandler(arguments, abstractStore = None, verificationHandler = No
                         swmInfrastructureFiles=swmInfrastructureFiles,
                         cacheFolder=cacheFolder,
                         logsFolder=logsFolder,
+                        outputFolder=outputFolder,
                         noLogs=noLogs,
                         ignoredStacks=ignoredStacks)
 

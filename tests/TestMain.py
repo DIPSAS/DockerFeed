@@ -37,6 +37,35 @@ class TestMain(unittest.TestCase):
         args = ['ls'] + defaultArgs + stacksToIgnoreArgs
         Main.Main(args)
 
+    def test_Pull(self):
+        cacheFolder = 'tests/cacheFolder'
+        shutil.rmtree(cacheFolder, ignore_errors=True)
+
+        stacksToIgnoreArgs = ['--ignored-stacks', 'nginx_test_ignored']
+        defaultArgs = ['--cache', cacheFolder, '--source', 'tests/testStacks', '--user', 'dummy:password', '-i', 'tests/testStacks/swarm.management.yml']
+        self.assertTrue(os.path.isdir('tests/testStacks'))
+
+        outputFolder = 'tests/cacheFolder/pulledStacks'
+        args = ['pull', '-r', 'tests/testStacks/stackList.txt', '--output-folder', outputFolder] + defaultArgs + stacksToIgnoreArgs
+        Main.Main(args)
+        self.assertTrue(os.path.isfile(os.path.join(outputFolder, 'docker-compose.nginx_test.1.1.1.yml')))
+
+
+    def test_Push(self):
+        cacheFolder = 'tests/cacheFolder'
+        outputFolder = os.path.join(cacheFolder, 'pushedStacks')
+        shutil.rmtree(cacheFolder, ignore_errors=True)
+        self.assertTrue(os.path.isdir('tests/testStacks'))
+
+        stacksToIgnoreArgs = ['--ignored-stacks', 'nginx_test_ignored']
+        defaultArgs = ['--cache', cacheFolder, '--source', outputFolder, '--user', 'dummy:password', '-i', 'tests/testStacks/swarm.management.yml']
+
+        args = ['push', 'tests/testStacks/docker-compose.*.yml'] + defaultArgs + stacksToIgnoreArgs
+        Main.Main(args)
+        self.assertTrue(os.path.isfile(os.path.join(outputFolder, 'docker-compose.nginx_test.1.0.0.yml')))
+        self.assertTrue(os.path.isfile(os.path.join(outputFolder, 'docker-compose.nginx_test.1.1.1.yml')))
+
+
     def test_Verify(self):
         cacheFolder = 'tests/cacheFolder'
         shutil.rmtree(cacheFolder, ignore_errors=True)

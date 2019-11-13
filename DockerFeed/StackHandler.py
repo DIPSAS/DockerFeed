@@ -15,6 +15,7 @@ class StackHandler:
                  swmInfrastructureFiles = [],
                  cacheFolder ='stacks',
                  logsFolder = 'logs',
+                 outputFolder = 'stacks',
                  noLogs = False,
                  ignoredStacks = []):
 
@@ -25,6 +26,7 @@ class StackHandler:
         self.__swmInfrastructureFiles = swmInfrastructureFiles
         self.__cacheFolder = cacheFolder
         self.__logsFolder = logsFolder
+        self.__outputFolder = outputFolder
         self.__noLogs = noLogs
         self.__ignoredStacks = ignoredStacks
 
@@ -43,9 +45,9 @@ class StackHandler:
                 print('Pushed {0} to source {1}'.format(stackFile, self.__abstractStore.GetSource()))
 
 
-    def Pull(self, stacks = [], outputFolder = 'stacks'):
+    def Pull(self, stacks = []):
         stackFiles = self.__GetStackFilesFromStore(stacks)
-        self.__PullStacks(stackFiles, outputFolder, printInfo=True)
+        self.__PullStacks(stackFiles, self.__outputFolder, printInfo=True)
 
 
     def Init(self):
