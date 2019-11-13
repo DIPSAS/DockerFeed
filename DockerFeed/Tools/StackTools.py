@@ -10,11 +10,14 @@ def GetStackFilesInCache(cacheFolder: str, stacks = []):
     return resolvedStackFiles
 
 
-def GetStackDescriptionList(stackFiles: list, stackSearches: list):
-    resolvedStackFiles = StackVersionTools.GetResolvedStackFileVersions(stackFiles, stackSearches, matchPartOfStackName=True)
+def GetStackDescriptionList(stackFiles: list, stackSearches: list, matchPartOfStackName: bool):
+    resolvedStackFiles = StackVersionTools.GetResolvedStackFileVersions(stackFiles, stackSearches, matchPartOfStackName=matchPartOfStackName)
     stackDescriptions = []
     for resolvedStackFile in resolvedStackFiles:
-        stackName, version = StackVersionTools.GetStackNameAndVersionFromStackFile(resolvedStackFile)
+        stackName, version, stackFileIsValid = StackVersionTools.GetStackNameAndVersionFromStackFile(resolvedStackFile)
+        if not(stackFileIsValid):
+            continue
+
         stackDescription = '{0}=={1}'.format(stackName, version)
         stackDescriptions.append(stackDescription)
 
@@ -24,9 +27,12 @@ def GetStackDescriptionList(stackFiles: list, stackSearches: list):
 def RemoveIgnoredStacksFromList(stackFiles: list, ignoredStacks: list):
     usedStackFiles = []
     for stackFile in stackFiles:
-        stackFileBaseName = StackVersionTools.GetStackNameFromStackFile(stackFile)
-        if stackFileBaseName in ignoredStacks:
-            warnings.warn('Ignoring stack {0}.'.format(stackFileBaseName))
+        stackName, version, stackFileIsValid = StackVersionTools.GetStackNameAndVersionFromStackFile(stackFile)
+        if not(stackFileIsValid):
+            continue
+
+        if stackName in ignoredStacks:
+            warnings.warn('Ignoring stack {0}.'.format(stackName))
         else:
             usedStackFiles.append(stackFile)
 

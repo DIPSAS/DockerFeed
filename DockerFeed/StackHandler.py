@@ -46,7 +46,7 @@ class StackHandler:
     def Pull(self, stacks = [], outputFolder = 'stacks'):
         stackFiles = self.__GetStackFilesFromStore(stacks)
         self.__PullStacks(stackFiles, outputFolder, showIgnoredStackWarning=True)
-        print('Locate stacks in local storage: {0}'.format(self.__cacheFolder))
+        print('Locate stacks here: {0}'.format(outputFolder))
 
 
     def Init(self):
@@ -66,7 +66,9 @@ class StackHandler:
     def Deploy(self, stacks = []):
         stackFiles = self.__GetStackFilesFromCache(stacks)
         for stackFile in stackFiles:
-            stackName = StackVersionTools.GetStackNameFromStackFile(stackFile)
+            stackName, version, stackFileIsValid = StackVersionTools.GetStackNameAndVersionFromStackFile(stackFile)
+            if not(stackFileIsValid):
+                continue
 
             valid = True
             if self.__verifyStacksOnDeploy:
@@ -82,7 +84,10 @@ class StackHandler:
         stackFiles = self.__GetStackFilesFromCache(stacks)
         stackFilesToRemove = []
         for stackFile in stackFiles:
-            stackName = StackVersionTools.GetStackNameFromStackFile(stackFile)
+            stackName, version, stackFileIsValid = StackVersionTools.GetStackNameAndVersionFromStackFile(stackFile)
+            if not(stackFileIsValid):
+                continue
+
             DockerSwarmTools.RemoveStack(stackName)
             stackFilesToRemove.append(stackFile)
 
@@ -96,9 +101,9 @@ class StackHandler:
         SwarmInitTools.PruneWithSwarmManager(self.__swmInfrastructureFiles)
 
 
-    def List(self, stackSearches = []):
-        stackFiles = self.__GetStackFilesFromStore()
-        return StackTools.GetStackDescriptionList(stackFiles, stackSearches)
+    def List(self, stacks = []):
+        stackFiles = self.__GetStackFilesFromStore(stacks)
+        return StackTools.GetStackDescriptionList(stackFiles, stacks, matchPartOfStackName=False)
 
 
     def Verify(self, stacks = []):
@@ -146,8 +151,11 @@ class StackHandler:
     def __PullStacks(self, stackFiles: list, outputFolder: str, showIgnoredStackWarning = False):
         os.makedirs(outputFolder, exist_ok=True)
         for stackFile in stackFiles:
-            stack = StackVersionTools.GetStackNameFromStackFile(stackFile)
-            if not(stack in self.__ignoredStacks):
+            stackName, version, stackFileIsValid = StackVersionTools.GetStackNameAndVersionFromStackFile(stackFile)
+            if not(stackFileIsValid):
+                continue
+
+            if not(stackName in self.__ignoredStacks):
                 self.__abstractStore.Pull(stackFile, outputFolder)
             elif showIgnoredStackWarning:
-                warnings.warn("Ignoring pull of stack {0}".format(stack))
+                warnings.warn("Ignoring pull of stack {0}".format(stackName))

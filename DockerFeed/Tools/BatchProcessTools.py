@@ -7,8 +7,12 @@ from DockerBuildSystem import DockerImageTools, YamlTools, DockerComposeTools
 
 
 def ExecuteStackAsProcess(stackFile: str, stacksFolder: str, noLogs: bool, logsFolder: str):
-    stackName = StackVersionTools.GetStackNameFromStackFile(stackFile)
-    temporaryStackFile = __GenerateStackFileWithContainerNames(stackFile, stacksFolder)
+    stackName, version, stackFileIsValid = StackVersionTools.GetStackNameAndVersionFromStackFile(stackFile)
+    if not(stackFileIsValid):
+        exitCode = 0
+        return exitCode
+
+    temporaryStackFile = __GenerateStackFileWithContainerNames(stackFile, stackName, stacksFolder)
     try:
         DockerComposeTools.DockerComposeUp([temporaryStackFile])
         exitCode = __VerifyStackExecutedSuccessfully(temporaryStackFile, stackName, noLogs, logsFolder)
@@ -23,9 +27,8 @@ def ExecuteStackAsProcess(stackFile: str, stacksFolder: str, noLogs: bool, logsF
     return exitCode
 
 
-def __GenerateStackFileWithContainerNames(stackFile: str, stacksFolder: str):
+def __GenerateStackFileWithContainerNames(stackFile: str, stackName: str, stacksFolder: str):
     yamlData: dict = YamlTools.GetYamlData([stackFile])
-    stackName = StackVersionTools.GetStackNameFromStackFile(stackFile)
 
     random.seed()
     randomId = random.randint(0, 1000)

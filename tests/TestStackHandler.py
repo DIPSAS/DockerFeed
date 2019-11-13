@@ -56,11 +56,10 @@ class TestStackHandler(unittest.TestCase):
         self.assertTrue('nginx_test==1.1.1' in stacks)
         self.assertTrue('nginx_test_digest==1.1.0' in stacks)
 
-        stacks = handler.List(['nginx>1.0.0'])
+        stacks = handler.List(['nginx_test>1.0.0'])
         self.assertFalse('nginx_test==1.0.0' in stacks)
         self.assertFalse('nginx_test==1.1.0' in stacks)
         self.assertTrue('nginx_test==1.1.1' in stacks)
-        self.assertFalse('nginx_test_digest==1.1.0' in stacks)
 
     def test_Verify(self):
         handler: StackHandler = TestUtilities.CreateStackHandler()

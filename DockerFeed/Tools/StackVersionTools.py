@@ -20,7 +20,9 @@ def GetResolvedStackFileVersion(stackFiles: list, stack: str, matchPartOfStackNa
     resolvedStackFile = None
     newestVersion = None
     for stackFile in stackFiles:
-        stackName, version = GetStackNameAndVersionFromStackFile(stackFile)
+        stackName, version, stackFileIsValid = GetStackNameAndVersionFromStackFile(stackFile)
+        if not(stackFileIsValid):
+            continue
 
         spec = GetVersionSpecification(stack)
         if ((matchPartOfStackName and spec.name in stackName) or spec.name == stackName) and MatchVersionSpecification(spec.specs, version):
@@ -57,16 +59,14 @@ def GetVersionSpecification(stack: str):
 def GetStackNamesFromStackFiles(stackFiles: list):
     stacks = []
     for stackFile in stackFiles:
-        stack = GetStackNameFromStackFile(stackFile)
-        if not(stack in stacks):
-            stacks.append(stack)
+        stackName, version, stackFileIsValid = GetStackNameAndVersionFromStackFile(stackFile)
+        if not(stackFileIsValid):
+            continue
+
+        if not(stackName in stacks):
+            stacks.append(stackName)
 
     return stacks
-
-
-def GetStackNameFromStackFile(stackFile: str):
-    stackName, version = GetStackNameAndVersionFromStackFile(stackFile)
-    return stackName
 
 
 def GetStackNameAndVersionFromStackFile(stackFile: str):
@@ -74,9 +74,11 @@ def GetStackNameAndVersionFromStackFile(stackFile: str):
     stackName = stackFileBasename[stackFileBasename.find('docker-compose.') + 15:stackFileBasename.rfind('.')]
     matches = re.search('.[0-9]+', stackName)
     version = None
+    stackFileIsValid = False
     if matches:
+        stackFileIsValid = True
         versionStr = stackName[matches.span()[0]+1:]
         version = semantic_version.Version(versionStr)
         stackName = stackName[:matches.span()[0]]
 
-    return (stackName, version)
+    return (stackName, version, stackFileIsValid)

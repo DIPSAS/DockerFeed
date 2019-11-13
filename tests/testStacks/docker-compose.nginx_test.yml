@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  nginx:
+    image: nginx
+    hostname: nginx
+    networks:
+      - infrastructure_test_network
+
+networks:
+  infrastructure_test_network:
+    external: true
