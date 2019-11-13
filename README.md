@@ -27,7 +27,7 @@ env_files:
     - <environment_file>
 ```
 
-An example on how to use DockerFeed is found in the [./Example](./Example/README.md) folder.
+An example on how to use DockerFeed is found in the [./Example](./Example) folder.
 
 ## Install Or Upgrade
 - pip install --upgrade DockerFeed
