@@ -45,8 +45,7 @@ class StackHandler:
 
     def Pull(self, stacks = [], outputFolder = 'stacks'):
         stackFiles = self.__GetStackFilesFromStore(stacks)
-        self.__PullStacks(stackFiles, outputFolder, showIgnoredStackWarning=True)
-        print('Locate stacks here: {0}'.format(outputFolder))
+        self.__PullStacks(stackFiles, outputFolder, printInfo=True)
 
 
     def Init(self):
@@ -148,7 +147,7 @@ class StackHandler:
         return StackVersionTools.GetResolvedStackFileVersions(stackFileArtifactNames, stacks)
 
 
-    def __PullStacks(self, stackFiles: list, outputFolder: str, showIgnoredStackWarning = False):
+    def __PullStacks(self, stackFiles: list, outputFolder: str, printInfo = False):
         os.makedirs(outputFolder, exist_ok=True)
         for stackFile in stackFiles:
             stackName, version, stackFileIsValid = StackVersionTools.GetStackNameAndVersionFromStackFile(stackFile)
@@ -157,5 +156,7 @@ class StackHandler:
 
             if not(stackName in self.__ignoredStacks):
                 self.__abstractStore.Pull(stackFile, outputFolder)
-            elif showIgnoredStackWarning:
+                if printInfo:
+                    print("Pulled stack {0}=={1} to {2}".format(stackName, version, os.path.join(outputFolder, stackFile)))
+            elif printInfo:
                 warnings.warn("Ignoring pull of stack {0}".format(stackName))
