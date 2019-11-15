@@ -5,19 +5,20 @@
 2. Install [DockerFeed](https://github.com/DIPSAS/DockerFeed) tool.
    - `pip install --upgrade DockerFeed`
      - `DockerFeed` is available as a command line tool with `dockerf`.
+     - If the `dockerf` command fails, then use the module directly with `python -m DockerFeed -h`.
 
 ## Initialize Swarm
 1. `dockerf init --source source/`
    - Initializes swarm and creates configs, secrets and networks given by the `swarm.management.yml` file. 
-2. `dockerf deploy -r definitions/deploy.txt --source source/`
-   - Deploys all stacks given by the `definitions/deploy.txt` definition. 
+2. `dockerf deploy -r definitions/service_list.txt --source source/`
+   - Deploys all stacks given by the `definitions/service_list.txt` definition. 
    - All stacks are downloaded from the the `source` destination, which may be an uri to a [Jfrog](https://jfrog.com/) feed or a folder.
    - Point to another definition file in the definitions folder to deploy that swarm definition. 
-3. `dockerf run -r definitions/run.txt --source source/`
-   - Runs all stacks as batch processes given by the `definitions/run.txt` definition. 
+3. `dockerf run -r definitions/batch_list.txt --source source/`
+   - Runs all stacks as batch processes given by the `definitions/batch_list.txt` definition. 
    - All console logs from the batch processes are exported to log files in a `logs/` folder located in the current working directory.
-4. `dockerf module deploy nginx_module>=1.0.0 --source source/`
-   - Deploys the `nginx_module`.
+4. `dockerf module deploy -r definitions/module_list.txt --source source/`
+   - Deploys all modules given by the `definitions/module_list.txt` definition.
 
 ## Update Or Remove Stack
 - Example:
