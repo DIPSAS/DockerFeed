@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  batch:
+    image: hello-world@sha256:c3b4ada4687bbaa170745b3e4dd8ac3f194ca95b2d0518b417fb47e5879d9b5f
+    networks:
+      - infrastructure_test_network
+
+networks:
+  infrastructure_test_network:
+    external: true

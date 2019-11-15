@@ -1,0 +1,6 @@
+modules:
+  nginx_module:
+    run:
+      - batch>=1.0.0
+    deploy:
+      - nginx>=1.0.0

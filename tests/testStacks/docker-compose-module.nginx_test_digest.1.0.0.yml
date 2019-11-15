@@ -1,0 +1,6 @@
+modules:
+  nginx:
+    run:
+      - batch_digest>=1.0.0
+    deploy:
+      - nginx_test_digest>=1.1.0

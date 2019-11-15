@@ -1,16 +1,39 @@
 import validators
 
 from DockerFeed.Tools import MainTools, SwarmInitTools
-from DockerFeed.StackHandler import StackHandler
+from DockerFeed.Handlers.StackHandler import StackHandler
+from DockerFeed.Handlers.ModuleHandler import ModuleHandler
 from DockerFeed.VerificationHandler import VerificationHandler
 from DockerFeed.Stores.AbstractStore import AbstractStore
 from DockerFeed.Stores.JfrogStore import JfrogStore
 from DockerFeed.Stores.FolderStore import FolderStore
 
 
+def CreateModuleHandler(arguments, stackHandler = None, abstractStore = None):
+    envVariables = arguments.env
+    ignoredModules = arguments.ignored
+    outputFolder = arguments.output_folder
+    swmInfrastructureFiles = arguments.infrastructure
+    cacheFolder = arguments.cache
+
+    SwarmInitTools.ExposeEnvironmentVariables(envVariables, swmInfrastructureFiles)
+
+    if abstractStore is None:
+        abstractStore: AbstractStore = __CreateStore(arguments)
+    if stackHandler is None:
+        stackHandler: StackHandler = CreateStackHandler(arguments, abstractStore=abstractStore)
+
+    return ModuleHandler(abstractStore,
+                         stackHandler,
+                         swmInfrastructureFiles=swmInfrastructureFiles,
+                         ignoredModules=ignoredModules,
+                         cacheFolder=cacheFolder,
+                         outputFolder=outputFolder)
+
+
 def CreateStackHandler(arguments, abstractStore = None, verificationHandler = None):
     envVariables = arguments.env
-    ignoredStacks = arguments.ignored_stacks
+    ignoredStacks = arguments.ignored
     logsFolder = arguments.logs_folder
     outputFolder = arguments.output_folder
     noLogs = arguments.no_logs
@@ -23,12 +46,11 @@ def CreateStackHandler(arguments, abstractStore = None, verificationHandler = No
     if abstractStore is None:
         abstractStore: AbstractStore = __CreateStore(arguments)
     if verificationHandler is None:
-        verificationHandler: __CreateVerificationHandler = __CreateVerificationHandler(arguments)
+        verificationHandler: VerificationHandler = __CreateVerificationHandler(arguments)
 
     return StackHandler(abstractStore,
                         verificationHandler,
                         verifyStacksOnDeploy=verifyStacksOnDeploy,
-                        removeFilesFromCache=True,
                         swmInfrastructureFiles=swmInfrastructureFiles,
                         cacheFolder=cacheFolder,
                         logsFolder=logsFolder,

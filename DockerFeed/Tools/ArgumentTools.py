@@ -3,9 +3,9 @@ import os
 
 DEFAULT_SOURCE = 'https://artifacts/delivery-dev'
 PACKAGE_CONSOLE_NAME = 'DockerFeed'
-DEFAULT_CACHE_FOLDER = os.path.join(os.path.expanduser('~'), '.dockerfeed', 'cache', 'stacks')
+DEFAULT_CACHE_FOLDER = os.path.join(os.path.expanduser('~'), '.dockerfeed', 'cache')
 DEFAULT_LOGS_FOLDER = os.path.join(os.getcwd(), 'logs')
-DEFAULT_PULL_STACKS_DESTINATION_FOLDER = os.path.join(os.getcwd(), 'stacks')
+DEFAULT_PULL_DESTINATION_FOLDER = os.path.join(os.getcwd(), 'output')
 
 
 def ParseArguments(args = None):
@@ -38,8 +38,8 @@ def __AddStackHandlerArguments(parser: argparse.ArgumentParser):
     parser.add_argument("-r", "--read", type=str, nargs='+',
                         help="Add files with a list of stacks to handle. "
                              "Each line in the file should be the stack name to handle.", default=[])
-    parser.add_argument("--ignored-stacks", type=str, nargs='+',
-                        help="Add a list of stacks to ignore.", default=[])
+    parser.add_argument("--ignored", type=str, nargs='+',
+                        help="Add a list of stacks or modules to ignore.", default=[])
     parser.add_argument("--logs-folder", type=str,
                         help="Specify folder for storing log files when executing batch processes with 'run'. "
                              "Default is './{0}'.".format(
@@ -48,9 +48,9 @@ def __AddStackHandlerArguments(parser: argparse.ArgumentParser):
                         help="Add --no-logs to drop storing log files when executing batch processes with 'run'.",
                         action='store_true')
     parser.add_argument("--output-folder", type=str,
-                        help="Specify destination folder for pulling stack files with 'pull'. "
+                        help="Specify destination folder for pulling files with 'pull'. "
                              "Default is './{0}'.".format(
-                            DEFAULT_PULL_STACKS_DESTINATION_FOLDER), default=DEFAULT_PULL_STACKS_DESTINATION_FOLDER)
+                            DEFAULT_PULL_DESTINATION_FOLDER), default=DEFAULT_PULL_DESTINATION_FOLDER)
     parser.add_argument("-i", "--infrastructure", type=str, nargs='+',
                         help="Specify path to swarm.management.yml files for creating the Swarm infrastructure.",
                         default=[])

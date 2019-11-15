@@ -2,10 +2,9 @@ import unittest
 import os
 import shutil
 from tests import TestUtilities
-from DockerBuildSystem import DockerComposeTools
 from DockerFeed import Main
 
-class TestMain(unittest.TestCase):
+class TestMainWithModules(unittest.TestCase):
 
     def test_MainInitDeployPrune(self):
         cacheFolder = 'tests/cacheFolder'
@@ -15,26 +14,26 @@ class TestMain(unittest.TestCase):
         defaultArgs = ['--cache', cacheFolder, '--source', 'tests/testStacks', '--user', 'dummy:password', '-i', 'tests/testStacks/swarm.management.yml']
         self.assertTrue(os.path.isdir('tests/testStacks'))
 
-        args = ['init'] + defaultArgs + stacksToIgnoreArgs
+        args = ['module', 'init'] + defaultArgs + stacksToIgnoreArgs
         Main.Main(args)
         TestUtilities.AssertInfrastructureExists(True)
 
-        args = ['deploy', '-r', 'tests/testStacks/stackList.txt', '--verify-stacks-on-deploy'] + defaultArgs + stacksToIgnoreArgs
+        args = ['module', 'deploy', '-r', 'tests/testStacks/stackList.txt', '--verify-stacks-on-deploy'] + defaultArgs + stacksToIgnoreArgs
         Main.Main(args)
         TestUtilities.AssertStacksExists(['nginx_test'], True)
         TestUtilities.AssertStacksExists(['nginx_test_ignored'], False)
 
-        args = ['deploy', '-r', 'tests/testStacks/stackList.txt'] + defaultArgs + stacksToIgnoreArgs
+        args = ['module', 'deploy', '-r', 'tests/testStacks/stackList.txt'] + defaultArgs + stacksToIgnoreArgs
         Main.Main(args)
         TestUtilities.AssertStacksExists(['nginx_test'], True)
         TestUtilities.AssertStacksExists(['nginx_test_ignored'], False)
 
-        args = ['prune'] + defaultArgs + stacksToIgnoreArgs
+        args = ['module', 'prune'] + defaultArgs + stacksToIgnoreArgs
         Main.Main(args)
         TestUtilities.AssertStacksExists(['nginx_test'], False)
         TestUtilities.AssertStacksExists(['nginx_test_ignored'], False)
 
-        args = ['ls'] + defaultArgs + stacksToIgnoreArgs
+        args = ['module', 'ls'] + defaultArgs + stacksToIgnoreArgs
         Main.Main(args)
 
     def test_Pull(self):
@@ -46,9 +45,9 @@ class TestMain(unittest.TestCase):
         self.assertTrue(os.path.isdir('tests/testStacks'))
 
         outputFolder = 'tests/cacheFolder/pulledStacks'
-        args = ['pull', '-r', 'tests/testStacks/stackList.txt', '--output-folder', outputFolder] + defaultArgs + stacksToIgnoreArgs
+        args = ['module', 'pull', '-r', 'tests/testStacks/stackList.txt', '--output-folder', outputFolder] + defaultArgs + stacksToIgnoreArgs
         Main.Main(args)
-        self.assertTrue(os.path.isfile(os.path.join(outputFolder, 'docker-compose.nginx_test.1.1.1.yml')))
+        self.assertTrue(os.path.isfile(os.path.join(outputFolder, 'docker-compose-module.nginx_test.1.1.1.yml')))
 
 
     def test_Push(self):
@@ -60,10 +59,10 @@ class TestMain(unittest.TestCase):
         stacksToIgnoreArgs = ['--ignored', 'nginx_test_ignored']
         defaultArgs = ['--cache', cacheFolder, '--source', outputFolder, '--user', 'dummy:password', '-i', 'tests/testStacks/swarm.management.yml']
 
-        args = ['push', 'tests/testStacks/docker-compose.*.yml'] + defaultArgs + stacksToIgnoreArgs
+        args = ['module', 'push', 'tests/testStacks/docker-compose-module.*.yml'] + defaultArgs + stacksToIgnoreArgs
         Main.Main(args)
-        self.assertTrue(os.path.isfile(os.path.join(outputFolder, 'docker-compose.nginx_test.1.0.0.yml')))
-        self.assertTrue(os.path.isfile(os.path.join(outputFolder, 'docker-compose.nginx_test.1.1.1.yml')))
+        self.assertTrue(os.path.isfile(os.path.join(outputFolder, 'docker-compose-module.nginx_test.1.0.0.yml')))
+        self.assertTrue(os.path.isfile(os.path.join(outputFolder, 'docker-compose-module.nginx_test.1.1.1.yml')))
 
 
     def test_Verify(self):
@@ -74,16 +73,16 @@ class TestMain(unittest.TestCase):
         defaultArgs = ['-r', 'tests/testStacks/stackList.txt', '--cache', cacheFolder, '--source', 'tests/testStacks', '--user', 'dummy:password', '-i', 'tests/testStacks/swarm.management.yml']
         self.assertTrue(os.path.isdir('tests/testStacks'))
 
-        args = ['verify', 'nginx_test_digest'] + defaultArgs
+        args = ['module', 'verify', 'nginx_test_digest'] + defaultArgs
         Main.Main(args)
 
-        args = ['verify'] + defaultArgs + stacksToIgnoreArgs + ['nginx_test']
+        args = ['module', 'verify'] + defaultArgs + stacksToIgnoreArgs + ['nginx_test']
         Main.Main(args)
 
-        args = ['verify', 'nginx_test_digest', '--verify-images'] + defaultArgs
+        args = ['module', 'verify', 'nginx_test_digest', '--verify-images'] + defaultArgs
         self.assertRaises(Exception, Main.Main, args)
 
-        args = ['verify', '--verify-image-digests'] + defaultArgs
+        args = ['module', 'verify', '--verify-image-digests'] + defaultArgs
         self.assertRaises(Exception, Main.Main, args)
 
     def test_DeployWithVerifyStacks(self):
@@ -91,41 +90,19 @@ class TestMain(unittest.TestCase):
         shutil.rmtree(cacheFolder, ignore_errors=True)
 
         defaultArgs = ['--cache', cacheFolder, '--source', 'tests/invalidTestStacks', '--user', 'dummy:password', '-i', 'tests/invalidTestStacks/swarm.management.yml']
-        args = ['init'] + defaultArgs
+        args = ['module', 'init'] + defaultArgs
         Main.Main(args)
         TestUtilities.AssertInfrastructureExists(True)
 
-        args = ['deploy', '-r', 'tests/invalidTestStacks/stackList.txt', '--verify-stacks-on-deploy', '--verify-no-configs', '--verify-no-secrets', '--verify-no-volumes', '--verify-no-ports'] + defaultArgs
+        args = ['module', 'deploy', 'nginx_test_invalid', '--verify-stacks-on-deploy', '--verify-no-configs', '--verify-no-secrets', '--verify-no-volumes', '--verify-no-ports'] + defaultArgs
         Main.Main(args)
         TestUtilities.AssertStacksExists(['nginx_test_invalid_config'], False)
         TestUtilities.AssertStacksExists(['nginx_test_invalid_secret'], False)
         TestUtilities.AssertStacksExists(['nginx_test_invalid_volume'], False)
         TestUtilities.AssertStacksExists(['nginx_test_invalid_port'], False)
 
-        args = ['prune'] + defaultArgs
+        args = ['module', 'prune'] + defaultArgs
         Main.Main(args)
-
-    def test_RunStacks(self):
-        cacheFolder = 'tests/cacheFolder'
-        shutil.rmtree(cacheFolder, ignore_errors=True)
-
-        DockerComposeTools.DockerComposeBuild(["tests/testBatchStacks/docker-compose.batch.1.0.0.yml"])
-        defaultArgs = ['--cache', cacheFolder, '--source', 'tests/testBatchStacks', '--user', 'dummy:password', '-i', 'tests/testBatchStacks/swarm.management.yml']
-        self.assertTrue(os.path.isdir('tests/testBatchStacks'))
-
-        args = ['init'] + defaultArgs
-        Main.Main(args)
-        TestUtilities.AssertInfrastructureExists(True)
-
-        os.environ['SHOULD_FAIL'] = 'false'
-        os.environ['SHOULD_FAIL_2'] = 'false'
-        args = ['run', 'batch'] + defaultArgs
-        Main.Main(args)
-
-        os.environ['SHOULD_FAIL'] = 'true'
-        os.environ['SHOULD_FAIL_2'] = 'false'
-        args = ['run', 'batch'] + defaultArgs
-        self.assertRaises(Exception, Main.Main, args)
 
 
     def test_DeployStacksWithFile(self):
@@ -134,19 +111,19 @@ class TestMain(unittest.TestCase):
 
         defaultArgs = ['--cache', cacheFolder, '--source', 'tests/testStacks', '--user', 'dummy:password', '-r', 'tests/testStacks/stackList.txt', '-i', 'tests/testStacks/swarm.management.yml']
         self.assertTrue(os.path.isdir('tests/testStacks'))
-        args = ['prune'] + defaultArgs
+        args = ['module', 'prune'] + defaultArgs
         Main.Main(args)
 
-        args = ['init'] + defaultArgs
+        args = ['module', 'init'] + defaultArgs
         Main.Main(args)
         TestUtilities.AssertInfrastructureExists(True)
 
-        args = ['deploy'] + defaultArgs
+        args = ['module', 'deploy'] + defaultArgs
         Main.Main(args)
         TestUtilities.AssertStacksExists(['nginx_test'], True)
         TestUtilities.AssertStacksExists(['nginx_test_digest'], False)
 
-        args = ['prune'] + defaultArgs
+        args = ['module', 'prune'] + defaultArgs
         Main.Main(args)
         TestUtilities.AssertStacksExists(['nginx_test'], False)
         TestUtilities.AssertStacksExists(['nginx_test_digest'], False)

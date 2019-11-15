@@ -16,11 +16,15 @@
 3. `dockerf run -r definitions/run.txt --source source/`
    - Runs all stacks as batch processes given by the `definitions/run.txt` definition. 
    - All console logs from the batch processes are exported to log files in a `logs/` folder located in the current working directory.
+4. `dockerf module deploy nginx_module>=1.0.0 --source source/`
+   - Deploys the `nginx_module`.
 
 ## Update Or Remove Stack
 - Example:
   - `dockerf deploy nginx --source source/`
   - `dockerf remove nginx --source source/`
+  - `dockerf module deploy nginx_module --source source/`
+  - `dockerf module remove nginx_module --source source/`
 
 ## Prune Swarm
 1. `dockerf prune`
@@ -28,8 +32,10 @@
    
 ## Push & Pull `docker-compose` Artifacts
 1. `dockerf pull nginx --source source/`
-   - Add `--output-folder` to specify a destination folder for pulling stack files with 'pull'. Default is ./stacks/.
-2. `dockerf push stacks/docker-compose.my_stack.*.yml` 
+   - Add `--output-folder` to specify a destination folder for pulling stack files with 'pull'. Default is ./output/.
+2. `dockerf module pull nginx_module --source source/`
+    - Add `--output-folder` to specify a destination folder for pulling module files with 'pull'. Default is ./output/.
+3. `dockerf push stacks/docker-compose.my_stack.*.yml` 
    - It is possible to use wildcard signs (`*`) to find `docker-compose` artifacts to push to source feed.
 
 ## General Info

@@ -1,18 +1,39 @@
 from DockerFeed.Stores.FolderStore import FolderStore
-from DockerFeed.StackHandler import StackHandler
+from DockerFeed.Handlers.StackHandler import StackHandler
+from DockerFeed.Handlers.ModuleHandler import ModuleHandler
 from DockerFeed.VerificationHandler import VerificationHandler
 import subprocess
 import shutil
 
 
+def CreateModuleHandler(swmInfrastructureFiles=["tests/testStacks/swarm.management,yml"],
+                        source="tests/testStacks",
+                        ignoredModules = [],
+                        ignoredStacks = ['nginx_test_ignored'],
+                        verifyStacksOnDeploy=False,
+                        cacheFolder = 'tests/cacheFolder'):
+
+    store = FolderStore(sourceFolder=source)
+    stackHandler = CreateStackHandler(swmInfrastructureFiles,
+                                                    source,
+                                                    ignoredStacks,
+                                                    verifyStacksOnDeploy,
+                                                    cacheFolder)
+    return ModuleHandler(store,
+                         stackHandler,
+                         swmInfrastructureFiles=swmInfrastructureFiles,
+                         cacheFolder=cacheFolder,
+                         ignoredModules=ignoredModules)
+
+
 def CreateStackHandler(swmInfrastructureFiles=["tests/testStacks/swarm.management,yml"],
                        source="tests/testStacks",
                        ignoredStacks = ['nginx_test_ignored'],
-                       verifyStacksOnDeploy=False):
+                       verifyStacksOnDeploy=False,
+                       cacheFolder = 'tests/cacheFolder'):
 
     store = FolderStore(sourceFolder=source)
     verificationHandler = VerificationHandler(verifyImages=False)
-    cacheFolder = 'tests/cacheFolder'
     shutil.rmtree(cacheFolder, ignore_errors=True)
     return StackHandler(store,
                         verificationHandler,

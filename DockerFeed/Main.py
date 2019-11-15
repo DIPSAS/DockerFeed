@@ -1,62 +1,36 @@
 import warnings
-from DockerFeed.StackHandler import StackHandler
-from DockerFeed import StackHandlerCreator
+from DockerFeed.Handlers.AbstractHandler import AbstractHandler
+from DockerFeed.Handlers.StackHandler import StackHandler
+from DockerFeed.Handlers.ModuleHandler import ModuleHandler
 from DockerFeed.Tools import MainTools, ArgumentTools
 
 
-def Main(args = None, stackHandler: StackHandler = None):
+def Main(args = None, stackHandler: StackHandler = None, moduleHandler: ModuleHandler = None):
     arguments = ArgumentTools.ParseArguments(args)
-    action = arguments.action[0]
-    stackListFilesToRead = arguments.read
-
-    stacks = []
-    if len(arguments.action) > 1:
-        stacks += arguments.action[1:]
-
-    if len(stackListFilesToRead) > 0:
-        stacks += MainTools.ParseStackListFiles(stackListFilesToRead)
-
-    AssertStacksProvided(action, stacks)
-
-    if stackHandler is None:
-        stackHandler = StackHandlerCreator.CreateStackHandler(arguments)
-
-    HandleAction(action, stacks, stackHandler)
+    action, stacks, handler = MainTools.ResolveArguments(arguments, stackHandler, moduleHandler)
+    HandleAction(action, stacks, handler)
 
 
-def HandleAction(action: str, stacks: list, stackHandler: StackHandler):
+def HandleAction(action: str, stacks: list, handler: AbstractHandler):
     if action == 'init':
-        stackHandler.Init()
+        handler.Init()
     elif action == 'deploy':
-        stackHandler.Deploy(stacks)
+        handler.Deploy(stacks)
     elif action == 'rm' or action == 'remove':
-        stackHandler.Remove(stacks)
+        handler.Remove(stacks)
     elif action == 'ls' or action == 'list':
-        MainTools.PrettyPrintStacks(stackHandler.List(stacks), stackHandler.GetSource())
+        MainTools.PrettyPrintStacks(handler.List(stacks), handler.GetSource())
     elif action == 'prune':
-        stackHandler.Prune()
+        handler.Prune()
     elif action == 'pull':
-        stackHandler.Pull(stacks)
+        handler.Pull(stacks)
     elif action == 'push':
-        stackHandler.Push(stacks)
+        handler.Push(stacks)
     elif action == 'run':
-        if not(stackHandler.Run(stacks)):
+        if not(handler.Run(stacks)):
             raise Exception("Some stacks failed execution! See warnings in log.")
     elif action == 'verify':
-        if not(stackHandler.Verify(stacks)):
+        if not(handler.Verify(stacks)):
             raise Exception("Stacks failed verification! See warnings in log.")
     else:
         warnings.warn("No action provided, please add -help to get help.")
-
-
-def AssertStacksProvided(action: str, stacks: list):
-    if action == 'init' or action == 'prune' or \
-            action == 'ls' or action == 'list':
-        return
-
-    if len(stacks) == 0:
-        warnings.warn("Please provide stacks to handle. \r\n"
-                      "Example: \r\n"
-                      "-> dockerf deploy stack1 stack2>=1.2.3 \r\n"
-                      "-> dockerf deploy -r stackList.txt")
-        exit(1)

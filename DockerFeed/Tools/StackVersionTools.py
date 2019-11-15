@@ -4,23 +4,23 @@ import semantic_version
 import requirements
 
 
-def GetResolvedStackFileVersions(stackFiles: list, stacks: list, matchPartOfStackName = False):
+def GetResolvedStackFileVersions(stackFiles: list, stacks: list, artifactIdentifier = 'docker-compose.', matchPartOfStackName = False):
     if len(stacks) == 0:
-        stacks = GetStackNamesFromStackFiles(stackFiles)
+        stacks = GetStackNamesFromStackFiles(stackFiles, artifactIdentifier=artifactIdentifier)
 
     resolvedStackFiles = []
     for stack in stacks:
-        resolvedStackFile = GetResolvedStackFileVersion(stackFiles, stack, matchPartOfStackName=matchPartOfStackName)
+        resolvedStackFile = GetResolvedStackFileVersion(stackFiles, stack, artifactIdentifier=artifactIdentifier, matchPartOfStackName=matchPartOfStackName)
         resolvedStackFiles.append(resolvedStackFile)
 
     return resolvedStackFiles
 
 
-def GetResolvedStackFileVersion(stackFiles: list, stack: str, matchPartOfStackName = False):
+def GetResolvedStackFileVersion(stackFiles: list, stack: str, artifactIdentifier = 'docker-compose.', matchPartOfStackName = False):
     resolvedStackFile = None
     newestVersion = None
     for stackFile in stackFiles:
-        stackName, version, stackFileIsValid = GetStackNameAndVersionFromStackFile(stackFile)
+        stackName, version, stackFileIsValid = GetStackNameAndVersionFromStackFile(stackFile, artifactIdentifier=artifactIdentifier)
         if not(stackFileIsValid):
             continue
 
@@ -56,10 +56,10 @@ def GetVersionSpecification(stack: str):
         return req
 
 
-def GetStackNamesFromStackFiles(stackFiles: list):
+def GetStackNamesFromStackFiles(stackFiles: list, artifactIdentifier = 'docker-compose.'):
     stacks = []
     for stackFile in stackFiles:
-        stackName, version, stackFileIsValid = GetStackNameAndVersionFromStackFile(stackFile)
+        stackName, version, stackFileIsValid = GetStackNameAndVersionFromStackFile(stackFile, artifactIdentifier=artifactIdentifier)
         if not(stackFileIsValid):
             continue
 
@@ -69,9 +69,9 @@ def GetStackNamesFromStackFiles(stackFiles: list):
     return stacks
 
 
-def GetStackNameAndVersionFromStackFile(stackFile: str):
+def GetStackNameAndVersionFromStackFile(stackFile: str, artifactIdentifier = 'docker-compose.'):
     stackFileBasename = os.path.basename(stackFile)
-    stackName = stackFileBasename[stackFileBasename.find('docker-compose.') + 15:stackFileBasename.rfind('.')]
+    stackName = stackFileBasename[stackFileBasename.find(artifactIdentifier) + len(artifactIdentifier):stackFileBasename.rfind('.')]
     matches = re.search('.[0-9]+', stackName)
     version = None
     stackFileIsValid = False

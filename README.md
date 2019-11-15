@@ -27,6 +27,23 @@ env_files:
     - <environment_file>
 ```
 
+To map which stacks fits with each other, we introduce the `docker-compose-module` artifact.
+The `docker-compose-module` artifact follows a filename pattern of `docker-compose-module.module-name.1.0.0.yml`, thus this filename convention:
+- `docker-compose-module.<MODULE_NAME>.<VERSION>.yml`
+- Note! The module name can only contain alphabetic letters and `-`/`_` signs.
+
+The `docker-compose-module` artifact is a yaml file with this type of content:
+```yaml
+modules:
+  my_module:
+    run:
+      - batch>=1.0.0
+    deploy:
+      - nginx>=1.0.0
+```
+
+The `run` section of the module is a list of stacks to run as batch processes before deploying the stacks in the `deploy` section.
+
 An example on how to use DockerFeed is found in the [./Example](./Example) folder.
 
 ## Install Or Upgrade
@@ -40,10 +57,12 @@ An example on how to use DockerFeed is found in the [./Example](./Example) folde
 ## Usage
 The Docker Feed tool is available as the command line tool `dockerf`.
 Handle the docker feed by adding any of the following commands with zero or more stacks to handle.
+Prefix any of the following actions with the `module` argument to handle `docker-compose-module` deployments.
 - `init` - Initialize Swarm.
 - `deploy` - Deploy stacks to Swarm.
     - Adding no specific stacks to deploy will result in deploying all stacks.
     - Example: `dockerf deploy first-stack second-stack>=1.0.0 third-stack==1.2.3`
+    - Example with module deployment: `dockerf module deploy first-module second-module>=1.0.0`
 - `rm`/`remove` - Remove stacks from Swarm.
     - Adding no specific stacks to remove will result in removing all stacks.
     - Example: `dockerf remove first-stack second-stack`
@@ -81,8 +100,8 @@ Handle the docker feed by adding any of the following commands with zero or more
     - Alternatively, any present `.env` will be considered as a file with environment variables to expose.
   - `-r/--read` with a list of files containing stacks to handle, thus each line in the file is the name of a stack to handle.
     - `dockerf deploy -r stackList.txt stackList2.txt`
-  - `--output-folder` to specify a destination folder for pulling stack files with 'pull'. Default is `./stacks/`.
-  - `--ignored-stacks` followed by a list of stacks to ignore.
+  - `--output-folder` to specify a destination folder for pulling stack files with 'pull'. Default is `./output/`.
+  - `--ignored` followed by a list of stacks or modules to ignore.
   - `--logs-folder` to specify folder for storing log files when executing batch processes with 'run'. Default is './logs'.
   - `--no-logs` to drop storing log files when executing batch processes with 'run'.
   - `--verify-stacks-on-deploy` to deploy only valid stacks.
@@ -93,7 +112,7 @@ Handle the docker feed by adding any of the following commands with zero or more
   - `--verify-no-volumes` to validate that no Swarm volumes are used in stack.
   - `--verify-no-ports` to validate that no ports are exposed in stack.
   - `-i/--infrastructure` to specify the path to swarm.management.yml files for creating the Swarm infrastructure.
-  - `-c/--cache` to specify the cache folder to use for local cache storage of stack files. 
+  - `-c/--cache` to specify the cache folder to use for local cache storage of files. 
   - `-h/--help` for help:
     - `dockerf -h`
 

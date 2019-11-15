@@ -1,0 +1,7 @@
+modules:
+  nginx:
+    deploy:
+      - nginx_test_invalid_config>=1.0.0
+      - nginx_test_invalid_secret>=1.0.0
+      - nginx_test_invalid_volume>=1.0.0
+      - nginx_test_invalid_port>=1.0.0

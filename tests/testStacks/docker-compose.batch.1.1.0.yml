@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  batch:
+    image: hello-world
+    networks:
+      - infrastructure_test_network
+
+networks:
+  infrastructure_test_network:
+    external: true
