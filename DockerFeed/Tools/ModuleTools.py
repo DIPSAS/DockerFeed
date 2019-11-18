@@ -1,5 +1,7 @@
 from DockerFeed.Handlers.StackHandler import StackHandler
 from DockerBuildSystem import YamlTools
+import warnings
+import os
 
 
 def DeployModule(stackHandler: StackHandler, moduleFile):
@@ -8,10 +10,15 @@ def DeployModule(stackHandler: StackHandler, moduleFile):
     for module in modules:
         moduleData: dict = yamlData['modules'][module]
 
+        batchProcessesRanWithSuccess = True
         if 'run' in moduleData:
-            stackHandler.Run(moduleData['run'])
+            batchProcessesRanWithSuccess = stackHandler.Run(moduleData['run'])
 
-        if 'deploy' in moduleData:
+        if not(batchProcessesRanWithSuccess):
+            baseFilename = os.path.basename(moduleFile)
+            warnings.warn("Some of the batch processes of the {0} module in module artifact {1} failed! See warnings in log.".format(module, baseFilename))
+
+        if 'deploy' in moduleData and batchProcessesRanWithSuccess:
             stackHandler.Deploy(moduleData['deploy'])
 
 
