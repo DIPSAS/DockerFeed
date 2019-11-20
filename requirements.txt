@@ -4,6 +4,6 @@ validators
 requirements-parser
 semantic-version
 dohq-artifactory
-pyyaml==5.1
-SwarmManagement>=1.1.56
-DockerBuildSystem>=1.1.39
+pyyaml
+SwarmManagement>=1.1.57
+DockerBuildSystem>=1.1.41

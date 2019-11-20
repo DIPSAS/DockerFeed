@@ -74,7 +74,7 @@ class StackHandler(AbstractHandler):
                 valid = self.__verificationHandler.VerifyStackFile(stackFile)
 
             if valid:
-                DockerSwarmTools.DeployStack(stackFile, stackName)
+                DockerSwarmTools.DeployStack(stackFile, stackName, withRegistryAuth=True)
             else:
                 warnings.warn("Skipping deployment of stack {0} since it is invalid!".format(stackName))
 

@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- the topmost header version must be set manually in the VERSION file -->
+## [1.3.2] - 2019-11-20
+- Added with registry auth argument to stack deployment.
+
 ## [1.3.1] - 2019-11-18
 - Fixed minor bug with skipping deploy when run section fails when deploying a module.
 
