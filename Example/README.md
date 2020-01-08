@@ -12,6 +12,8 @@
    - Initializes swarm and creates configs, secrets and networks given by the `swarm.management.yml` file. 
 2. `dockerf deploy -r definitions/service_list.txt --source source/`
    - Deploys all stacks given by the `definitions/service_list.txt` definition. 
+     - It is also possible to provide stacks to handle directly:
+       - `dockerf deploy nginx>=1.0.0 --source source/`
    - All stacks are downloaded from the the `source` destination, which may be an uri to a [Jfrog](https://jfrog.com/) feed or a folder.
    - Point to another definition file in the definitions folder to deploy that swarm definition. 
 3. `dockerf run -r definitions/batch_list.txt --source source/`
