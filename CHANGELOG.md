@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- the topmost header version must be set manually in the VERSION file -->
+## [1.3.3] - 2020-01-08
+- Updated dependencies with bugfix.
+
 ## [1.3.2] - 2019-11-20
 - Added with registry auth argument to stack deployment.
 
