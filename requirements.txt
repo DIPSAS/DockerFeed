@@ -5,5 +5,5 @@ requirements-parser
 semantic-version
 dohq-artifactory
 pyyaml
-SwarmManagement>=1.1.58
-DockerBuildSystem>=1.1.42
+SwarmManagement>=1.1.59
+DockerBuildSystem>=1.1.43
