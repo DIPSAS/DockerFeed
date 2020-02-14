@@ -22,3 +22,8 @@ ArenaDeliveryDockerStandalone/
 tests/tempFolderStore/
 tests/cacheFolder/
 tests/tests/
+docker-compose.build.*.yml
+docker-compose.publish.*.yml
+docker-compose.test.*.yml
+docker-compose.run.*.yml
+docker-compose.digest*.yml

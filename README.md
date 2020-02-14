@@ -116,6 +116,24 @@ Prefix any of the following actions with the `module` argument to handle `docker
   - `-h/--help` for help:
     - `dockerf -h`
 
+## DockerFeed In Docker
+The [hansehe/dockerfeed](https://hub.docker.com/repository/docker/hansehe/dockerfeed) image includes [DockerFeed](https://github.com/DIPSAS/DockerFeed) binaries, and makes it possible to push and verify docker-compose charts inside of a container.
+
+Additionally, it is possible to push regular [Helm](https://helm.sh/) charts to a helm repository.
+
+## Example
+### Push docker-compose chart:
+```
+docker run -it -v C:/MyLocalDirectoryTo/charts/:/charts -w /charts hansehe/dockerfeed push docker-compose.stack-name.1.0.0.yml --source https://artifacts/docker-compose-feed
+```
+
+### Push helm chart:
+```
+docker run -it -v C:/MyLocalDirectoryTo/charts/:/charts -w /charts hansehe/dockerfeed push my-helm-chart-1.0.0.tgz --source https://artifacts/helm-feed
+```
+
+## Development
+
 ### Dependencies:
   - `pip install twine`
   - `pip install wheel`
