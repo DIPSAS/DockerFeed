@@ -1,0 +1,17 @@
+changelog:
+    file: CHANGELOG.md
+    envKey: VERSION
+
+build:
+    selections:
+        dockerfeed:
+            additionalTag: latest
+            files:
+                - docker-compose.yml
+
+publish:
+    selections:
+        dockerfeed:
+            additionalTag: latest
+            files:
+                - docker-compose.yml
