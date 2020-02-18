@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- the topmost header version must be set manually in the VERSION file -->
+## [1.3.6] - 2020-02-18
+- Added argument options to set artifact identifiers.
+
 ## [1.3.5] - 2020-01-10
 - Updated dependencies.
 

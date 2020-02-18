@@ -15,6 +15,7 @@ def CreateModuleHandler(arguments, stackHandler = None, abstractStore = None):
     outputFolder = arguments.output_folder
     swmInfrastructureFiles = arguments.infrastructure
     cacheFolder = arguments.cache
+    moduleArtifactIdentifier = arguments.module_artifact_identifier
 
     SwarmInitTools.ExposeEnvironmentVariables(envVariables, swmInfrastructureFiles)
 
@@ -28,7 +29,8 @@ def CreateModuleHandler(arguments, stackHandler = None, abstractStore = None):
                          swmInfrastructureFiles=swmInfrastructureFiles,
                          ignoredModules=ignoredModules,
                          cacheFolder=cacheFolder,
-                         outputFolder=outputFolder)
+                         outputFolder=outputFolder,
+                         artifactIdentifier=moduleArtifactIdentifier)
 
 
 def CreateStackHandler(arguments, abstractStore = None, verificationHandler = None):
@@ -40,6 +42,7 @@ def CreateStackHandler(arguments, abstractStore = None, verificationHandler = No
     swmInfrastructureFiles = arguments.infrastructure
     cacheFolder = arguments.cache
     verifyStacksOnDeploy = arguments.verify_stacks_on_deploy
+    stackArtifactIdentifier = arguments.stack_artifact_identifier
 
     SwarmInitTools.ExposeEnvironmentVariables(envVariables, swmInfrastructureFiles)
 
@@ -56,7 +59,8 @@ def CreateStackHandler(arguments, abstractStore = None, verificationHandler = No
                         logsFolder=logsFolder,
                         outputFolder=outputFolder,
                         noLogs=noLogs,
-                        ignoredStacks=ignoredStacks)
+                        ignoredStacks=ignoredStacks,
+                        artifactIdentifier=stackArtifactIdentifier)
 
 
 def __CreateStore(arguments):

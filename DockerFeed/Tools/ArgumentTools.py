@@ -6,6 +6,8 @@ PACKAGE_CONSOLE_NAME = 'DockerFeed'
 DEFAULT_CACHE_FOLDER = os.path.join(os.path.expanduser('~'), '.dockerfeed', 'cache')
 DEFAULT_LOGS_FOLDER = os.path.join(os.getcwd(), 'logs')
 DEFAULT_PULL_DESTINATION_FOLDER = os.path.join(os.getcwd(), 'output')
+DEFAULT_STACK_ARTIFACT_IDENTIFIER = 'docker-compose.'
+DEFAULT_MODULE_ARTIFACT_IDENTIFIER = 'docker-compose-module.'
 
 
 def ParseArguments(args = None):
@@ -58,6 +60,14 @@ def __AddStackHandlerArguments(parser: argparse.ArgumentParser):
                         help="Specify cache folder to use for local cache storage of stack files. "
                              "Default is {0}".format(
                             DEFAULT_CACHE_FOLDER), default=DEFAULT_CACHE_FOLDER)
+    parser.add_argument("-said", "--stack-artifact-identifier", type=str,
+                        help="Specify stack artifact identifier. "
+                             "Default is {0}".format(
+                            DEFAULT_STACK_ARTIFACT_IDENTIFIER), default=DEFAULT_STACK_ARTIFACT_IDENTIFIER)
+    parser.add_argument("-maid", "--module-artifact-identifier", type=str,
+                        help="Specify module artifact identifier. "
+                             "Default is {0}".format(
+                            DEFAULT_MODULE_ARTIFACT_IDENTIFIER), default=DEFAULT_MODULE_ARTIFACT_IDENTIFIER)
 
 
 def __AddStoreArguments(parser: argparse.ArgumentParser):
