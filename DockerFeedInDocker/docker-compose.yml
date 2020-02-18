@@ -1,8 +1,10 @@
 version: '3.3'
 
 services:
-  helm:
+  dockerfeed:
     image: hansehe/dockerfeed:${VERSION}
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - VERSION=${VERSION}

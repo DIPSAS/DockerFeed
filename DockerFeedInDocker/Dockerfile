@@ -1,6 +1,7 @@
 FROM python:3.8.1-buster
 
-RUN pip install DockerFeed
+ARG VERSION=1.0.0
+RUN pip install DockerFeed==${VERSION}
 
 WORKDIR /charts
 
