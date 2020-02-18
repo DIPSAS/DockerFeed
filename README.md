@@ -113,6 +113,8 @@ Prefix any of the following actions with the `module` argument to handle `docker
   - `--verify-no-ports` to validate that no ports are exposed in stack.
   - `-i/--infrastructure` to specify the path to swarm.management.yml files for creating the Swarm infrastructure.
   - `-c/--cache` to specify the cache folder to use for local cache storage of files. 
+  - `-said/--stack-artifact-identifier` to specify stack artifact identifier. Default is `docker-compose.`.
+  - `-maid/--module-artifact-identifier` to specify module artifact identifier. Default is `docker-compose-module.`.
   - `-h/--help` for help:
     - `dockerf -h`
 
