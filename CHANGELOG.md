@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- the topmost header version must be set manually in the VERSION file -->
+## [1.3.9] - 2020-02-27
+- Updated dependencies.
+
 ## [1.3.8] - 2020-02-27
 - Updated dependencies.
 
