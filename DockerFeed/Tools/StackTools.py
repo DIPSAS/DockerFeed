@@ -45,7 +45,7 @@ def PushStacks(abstractStore: AbstractStore, stackFilePatterns: list):
     for stackFilePattern in stackFilePatterns:
         stackFiles = glob.glob(stackFilePattern)
         if len(stackFiles) == 0:
-            warnings.warn("Could not detect any files to push with file pattern: {0}".format(stackFilePattern))
+            raise Exception("Could not detect any files to push with file pattern: {0}".format(stackFilePattern))
         for stackFile in stackFiles:
             abstractStore.Push(stackFile)
             print('Pushed {0} to source {1}'.format(stackFile, abstractStore.GetSource()))
