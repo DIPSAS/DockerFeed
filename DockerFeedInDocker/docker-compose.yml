@@ -2,7 +2,7 @@ version: '3.3'
 
 services:
   dockerfeed:
-    image: hansehe/dockerfeed:${VERSION}
+    image: dipsas/dockerfeed:${VERSION}
     build:
       context: .
       dockerfile: Dockerfile
