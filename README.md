@@ -143,8 +143,9 @@ docker run -it -v C:/MyLocalDirectoryTo/charts/:/charts -w /charts dipsas/docker
 
 ### Publish New Version.
 1. Configure [CHANGELOG.md](./CHANGELOG.md) with new version.
-2. Package: `python setup.py bdist_wheel`
-3. Publish: `twine upload dist/*`
+3. Build: python setup.py bdist_wheel
+4. Check: twine check dist/*
+5. Publish: twine upload dist/*
 
 ### Run Unit Tests
 - python -m unittest
